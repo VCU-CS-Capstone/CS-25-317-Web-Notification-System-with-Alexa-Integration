@@ -21,6 +21,6 @@ a better understanding of the problems you encountered during the development of
 - *Technical Advisor Name* - *Company Affliation* - Technical Advisor
 - *Faculty Advisor's Name* - *Department* - Faculty Advisor
 - *Parker Dizon* - *Computer Science* - Student Team Member
-- *Rebecca Browder* - *major* - Student Team Member
-- *Aryan Garg* - *major* - Student Team Member
-- *Lavale Butterfield* - *major* - Student Team Member
+- *Rebecca Browder* - *Computer Science* - Student Team Member
+- *Aryan Garg* - *Computer Science* - Student Team Member
+- *Lavale Butterfield* - *Computer Science* - Student Team Member
