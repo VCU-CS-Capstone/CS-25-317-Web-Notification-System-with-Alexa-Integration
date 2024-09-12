@@ -17,9 +17,9 @@ a better understanding of the problems you encountered during the development of
 **Note:** Commits behind this fork could be automatically synced, meaning that changes made in the template are pushed into your repo. Please do not discard commits ahead (these are the updates you make to this repository).
 
 ## Project Team
-- *Mentor's Name*  - *Company Affliation* - Mentor
-- *Technical Advisor Name* - *Company Affliation* - Technical Advisor
-- *Faculty Advisor's Name* - *Department* - Faculty Advisor
+- *Kristie Yelinek* - *QL+* - Sponsor
+- *Karina*  - *QL+* - Client
+- *Tamer Nadeem* - *Computer Science* - Faculty Advisor
 - *Parker Dizon* - *Computer Science* - Student Team Member
 - *Rebecca Browder* - *Computer Science* - Student Team Member
 - *Aryan Garg* - *Computer Science* - Student Team Member
