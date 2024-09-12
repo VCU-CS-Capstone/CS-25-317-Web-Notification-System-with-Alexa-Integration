@@ -9,7 +9,7 @@ A mobile application and/or tool that can integrate with smart TVs and help faci
 | Notes and Research | Relevant helpful information to understand the tools and techniques used in the project |
 | Project Deliverables | Folder that contains final pdf versions of all Fall and Spring Major Deliverables |
 | Status Reports | Project management documentation - weekly reports, milestones, etc. |
-| Advisor Meetings | Reports summarizing the weekly meetings with the Sponsor/Advisor 
+| Advisor Reports | Reports summarizing the weekly meetings with the Sponsor/Advisor 
 | scr | Source code - create as many subdirectories as needed |
 
 ## Project Team
