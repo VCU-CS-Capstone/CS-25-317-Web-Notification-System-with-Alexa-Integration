@@ -1,20 +1,16 @@
 # *Reminder App with Zoom and Telehealth Integration for Improved Independence for TBI/PTSD Patients*
 ## *QL+*
-## *Short Project Description*
-The directory structure in this GitHub is to allow the project to have all its resources self-contained.
-Open Source software should not just be a repository of code.  There are a number of directories to help you and others who will 
-follow in your footsteps.  It'll also allow the Linux Foundation OMP Mentorship program to keep track of your project and get
-a better understanding of the problems you encountered during the development of this project. 
+## *Project Description*
+A mobile application and/or tool that can integrate with smart TVs and help facilitate telehealth appointments is needed to expand the range of services available to veterans and help ensure they make and attend their needed medical appointments. The next phase of the project includes integrating Zoom into the app to allow patients to connect with caregivers and medical professionals for telehealth appointments. Requirements: Portable application for use on mobile devices and smart TVs, easy to use buttons, prompts, and choices, Able to share information with other applications such as Google Calendar, Allow for telehealth appointments, Cybersecure to secure private personal information to include HIPAA protected information, Potential to connect with hearing aids, Remind veterans of appointments, medication, and other medical needs, Potential to connect with blood pressure cuffs and heart rate monitors. 
 
 | Folder | Description |
 |---|---|
-| Documentation |  all documentation the project team has created to describe the architecture, design, installation, and configuration of the project |
+| Documentation |  All documentation the project team has created to describe the architecture, design, installation, and configuration of the project |
 | Notes and Research | Relevant helpful information to understand the tools and techniques used in the project |
 | Project Deliverables | Folder that contains final pdf versions of all Fall and Spring Major Deliverables |
 | Status Reports | Project management documentation - weekly reports, milestones, etc. |
+| Advisor Meetings | Reports summarizing the weekly meetings with the Sponsor/Advisor 
 | scr | Source code - create as many subdirectories as needed |
-
-**Note:** Commits behind this fork could be automatically synced, meaning that changes made in the template are pushed into your repo. Please do not discard commits ahead (these are the updates you make to this repository).
 
 ## Project Team
 - *Kristie Yelinek* - *QL+* - Sponsor
