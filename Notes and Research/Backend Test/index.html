@@ -6,7 +6,7 @@
   <title>Supabase Users API</title>
 </head>
 <!--User List-->
-<body>
+<body id = "sign">
   <h1>User List</h1>
   <button id="load-users">Load Users</button>
   <ul id="user-list"></ul>
@@ -29,10 +29,31 @@
 						<input type="password" class="form-control" id="password" placeholder="Enter password" name="password" required>
 					</div>
 					<button type="submit" class="btn btn-primary" id="sign-up">Sign Up</button>
+          <button type="submit" class="btn btn-secondary" id="login" onclick="window.location.href = 'login.html';">Go to Login</button>
 				</div>
 			</div>
 		</form>
 	</div>
+
+  <h2>Select Date and Time</h2>
+<form>
+    <!-- Date Picker -->
+    <label for="date">Select Date:</label>
+    <input type="date" id="date" name="date" required>
+    <br><br>
+
+    <!-- Start Time Picker -->
+    <label for="start-time">Start Time:</label>
+    <input type="time" id="start-time" name="start-time" required>
+    <br><br>
+
+    <!-- End Time Picker -->
+    <label for="end-time">End Time:</label>
+    <input type="time" id="end-time" name="end-time" required>
+    <br><br>
+
+    <button type="submit">Submit</button>
+</form>
 
   <script src = "script.js"></script>
 </body>

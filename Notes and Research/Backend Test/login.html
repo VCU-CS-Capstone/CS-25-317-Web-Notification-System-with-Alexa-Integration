@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Users API</title>
+</head>
+<!--User List-->
+<body id = "log">
+  <h1>Login</h1>
+  <!--Create User Form-->
+  <div class="container mt-3 mb-3">
+		<form method="post">
+			<div class="row justify-content-center">
+				<div class="col-4">
+				<div class="form-group">
+						<label>Email:</label>
+						<input type="email" class="form-control" id="email" placeholder="Enter email" name="email" required>
+					</div>
+					<div class="form-group">
+						<label>Password:</label>
+						<input type="password" class="form-control" id="password" placeholder="Enter password" name="password" required>
+					</div>
+					<button type="submit" class="btn btn-primary" id="login">Login</button>
+				</div>
+			</div>
+		</form>
+	</div>
+  <script src = "script.js"></script>
+</body>
+</html>

@@ -28,10 +28,27 @@ app.post('/users', async (req, res) => {
   const { username, email, password } = req.body;
   const { data, error } = await supabase
     .from('users')
-    .insert({username: username, email: email, password:password}); 
+    .insert({username: username, email: email, password: password}); 
   if (error) return res.status(500).json({ error: error.message });
   return res.status(201).json({ data });
 });
+
+//Login user
+app.post('/login', async (req, res) => {
+  const{ email, password } = req.body;
+  const { data, error } = await supabase
+    .from('users')
+    .select('password , id')
+    .eq('email', email);
+  if (error) return res.status(500).json({ error: error.message });
+  const id = data[0]?.id
+  if( data[0]?.password == password){
+    return res.status(201).json({ id });
+  }
+  else{
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+})
 
 // Start server
 app.listen(PORT, () => {
