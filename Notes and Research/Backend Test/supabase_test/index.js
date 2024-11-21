@@ -23,6 +23,15 @@ app.get('/users', async (req, res) => {
   res.json(data);
 });
 
+//Get all events
+app.get('/events', async (req, res) => {
+  const { data, error } = await supabase
+    .from('events')
+    .select('*');
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 //Add new user
 app.post('/users', async (req, res) => {
   const { username, email, password } = req.body;
@@ -49,6 +58,33 @@ app.post('/login', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 })
+
+// Add Event 
+app.post('/events', async (req, res) => {
+
+  const {event_name, start_time, end_time, event_date, calendar_source} = req.body; 
+  try {
+    const {data, error } = await supabase
+    .from('events')
+    .insert([
+      { event_name,
+      start_time,
+      end_time, 
+      event_date, 
+      calendar_source}
+  ]);
+
+  if (error) {
+    console.error('Supabase insert error:', error);
+    return res.status(500).json({ error: error.message }); 
+  }
+
+  return res.status(201).json({ data }); 
+} catch (error) {
+  console.error('Unexpected error:', error); 
+  return res.status(500).json({ error: 'Unexpected server error'})
+}
+});
 
 // Start server
 app.listen(PORT, () => {

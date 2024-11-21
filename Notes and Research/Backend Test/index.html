@@ -5,18 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Supabase Users API</title>
 </head>
+
 <!--User List-->
 <body id = "sign">
-  <h1>User List</h1>
+  <h1>List Data</h1>
   <button id="load-users">Load Users</button>
   <ul id="user-list"></ul>
+
+  <button id="load-events">Load Events</button>
+  <ul id="event-list"></ul>
 
   <!--Create User Form-->
   <div class="container mt-3 mb-3">
 		<form method="post">
 			<div class="row justify-content-center">
 				<div class="col-4">
-				<div class="form-group">
+				  <div class="form-group">
 						<label>Username:</label>
 						<input type="username" class="form-control" id="username" placeholder="Enter username" name="username" required>
 					</div>
@@ -35,25 +39,46 @@
 		</form>
 	</div>
 
-  <h2>Select Date and Time</h2>
-<form>
-    <!-- Date Picker -->
-    <label for="date">Select Date:</label>
-    <input type="date" id="date" name="date" required>
-    <br><br>
+  <!--Create event -->
+  <h2>Create Event</h2>
+  <form>
+    <div class="row justify-content-center">
+      <div class="col-4">
+        <div class="form-group">
+          <div>
+            <label>Event Name:</label>
+						<input type="text" class="form-control" id="event-name" placeholder="Enter event name" name="username" required>
+          </div>
+          <div>
+            <!-- Date Picker -->
+            <label for="date">Select Date:</label>
+            <input type="date" id="event-date" name="date" required>
+            <br><br>
 
-    <!-- Start Time Picker -->
-    <label for="start-time">Start Time:</label>
-    <input type="time" id="start-time" name="start-time" required>
-    <br><br>
+            <!-- Start Time Picker -->
+            <label for="event-start-time">Start Time:</label>
+            <input type="time" id="event-start-time" name="start-time" required>
+            <br><br>
 
-    <!-- End Time Picker -->
-    <label for="end-time">End Time:</label>
-    <input type="time" id="end-time" name="end-time" required>
-    <br><br>
-
-    <button type="submit">Submit</button>
-</form>
+            <!-- End Time Picker -->
+            <label for="event-end-time">End Time (optional):</label>
+            <input type="time" id="event-end-time" name="end-time">
+            <br><br>
+          </div>
+          <div>
+            <label for="calendar-source">Calendar:</label>
+            <select id="calendar-source" name="calendar-source" required>
+              <option value="Google">Google</option>
+              <option value="Outlook">Outlook</option>
+            </select>
+            <br><br>
+          </div>
+          <button type="submit" id="event-button">Submit</button>
+        </div>
+      </div>
+    </div>
+  </form>
+  
 
   <script src = "script.js"></script>
 </body>
