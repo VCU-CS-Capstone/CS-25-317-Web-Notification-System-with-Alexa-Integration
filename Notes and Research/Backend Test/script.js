@@ -3,10 +3,6 @@ if(document.body.id == "sign"){
   const loadUsersButton = document.getElementById('load-users');
   const userList = document.getElementById('user-list');
 
-  //Show events constants
-  const loadEventsButton = document.getElementById('load-events');
-  const eventList = document.getElementById('event-list'); 
-
   //Sign Up Constants
   const signUpButton = document.getElementById('sign-up');
 
@@ -30,26 +26,6 @@ if(document.body.id == "sign"){
     } 
     catch (error) {
       console.error('Error loading users:', error);
-    }
-  });
-
-  //Event for showing all events
-  loadEventsButton.addEventListener('click', async () => {
-    try {
-      const response = await fetch('http://localhost:5000/events');
-      if (!response.ok) throw new Error('Failed to fetch events');
-      
-      const events = await response.json();
-      eventList.innerHTML = ''; // Clear the list
-
-      events.forEach(event => {
-        const li = document.createElement('li');
-        li.textContent = `${event.event_name}`;
-        eventList.appendChild(li);
-      });
-    } 
-    catch (error) {
-      console.error('Error loading events:', error);
     }
   });
 
@@ -78,6 +54,74 @@ if(document.body.id == "sign"){
     } 
     catch (error) {
       console.error('Error signing up:', error);
+    }
+  });
+}
+
+if(document.body.id == "event"){
+
+  //Show events constants
+  const loadEventsButton = document.getElementById('load-events');
+  const eventList = document.getElementById('event-list'); 
+  const eventButton = document.getElementById('event-button'); 
+
+  //Event for showing all events
+  loadEventsButton.addEventListener('click', async () => {
+  try {
+    const response = await fetch('http://localhost:5000/events');
+    if (!response.ok) throw new Error('Failed to fetch events');
+    
+    const events = await response.json();
+    eventList.innerHTML = ''; // Clear the list
+    
+    events.forEach(event => {
+      // Create a list item for the event name
+      const li = document.createElement('li');
+      li.textContent = event.event_name;
+    
+      // Create a nested list for event details
+      const nestedUl = document.createElement('ul');
+    
+      // Add each detail as an indented bullet point
+      const details = [
+        `Date: ${event.event_date}`,
+        `Start Time: ${event.start_time}`,
+        `End Time: ${event.end_time}`,
+        `Calendar Source: ${event.calendar_source}`
+      ];
+    
+      details.forEach(detail => {
+        const detailLi = document.createElement('li');
+        detailLi.textContent = detail;
+        nestedUl.appendChild(detailLi);
+      });
+    
+      // Append the nested list to the main list item
+      li.appendChild(nestedUl);
+
+      // Create buttons
+      const button1 = document.createElement('button');
+      button1.textContent = 'Edit';
+
+      const button2 = document.createElement('button');
+      button2.textContent = 'Delete';
+      if (button2) {
+        button2.addEventListener('click', () => {
+          alert(`Deleting event: ${event.event_name}`);
+        });
+      }
+
+      // Append buttons to the list item
+      li.appendChild(button1);
+      li.appendChild(button2);
+
+      // Append the main list item to the event list
+      eventList.appendChild(li);
+    });
+    
+  } 
+    catch (error) {
+      console.error('Error loading events:', error);
     }
   });
 
@@ -115,11 +159,9 @@ if(document.body.id == "sign"){
 
 }
 
-
-
 if(document.body.id == "log"){
   //Login Constants
-  const loginButton = document.getElementById('login');
+  const loginButton = document.getElementById('account-login');
 
   //Event for logging in users
   loginButton.addEventListener('click', async (event) => {
@@ -143,8 +185,9 @@ if(document.body.id == "log"){
       //Check login response
       if (!response.ok) throw new Error('Failed to log in');
       const userId = await response.json();
-
       console.log(userId);
+
+      window.location.href = 'events.html'; 
     }
     catch (error) {
       console.error('Error signing up:', error);
