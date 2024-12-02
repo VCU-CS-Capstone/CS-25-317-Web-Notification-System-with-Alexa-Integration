@@ -1,15 +1,15 @@
 if(document.body.id == "sign"){
   //Show users constants
-  const loadUsersButton = document.getElementById('load-users');
+  //const loadUsersButton = document.getElementById('load-users');
   const userList = document.getElementById('user-list');
 
-  //Sign Up Constants
+  // Sign Up Constants
   const signUpButton = document.getElementById('sign-up');
 
-  //Event constants
-  const eventButton = document.getElementById('event-button'); 
-
-  //Event for showing users
+  // Event constants
+  //const eventButton = document.getElementById('event-button'); 
+  
+  /* Event for showing users
   loadUsersButton.addEventListener('click', async () => {
     try {
       const response = await fetch('http://localhost:5000/users');
@@ -27,9 +27,10 @@ if(document.body.id == "sign"){
     catch (error) {
       console.error('Error loading users:', error);
     }
-  });
+  });*/
 
-  //Event for signing up
+ 
+  // Event for signing up
   signUpButton.addEventListener('click', async (event) => {
     // Prevent form from reloading the page
     event.preventDefault();
@@ -56,76 +57,84 @@ if(document.body.id == "sign"){
       console.error('Error signing up:', error);
     }
   });
+
 }
 
 if(document.body.id == "event"){
 
-  //Show events constants
-  const loadEventsButton = document.getElementById('load-events');
+  // Show events constants
   const eventList = document.getElementById('event-list'); 
   const eventButton = document.getElementById('event-button'); 
 
-  //Event for showing all events
-  loadEventsButton.addEventListener('click', async () => {
-  try {
-    const response = await fetch('http://localhost:5000/events');
-    if (!response.ok) throw new Error('Failed to fetch events');
-    
-    const events = await response.json();
-    eventList.innerHTML = ''; // Clear the list
-    
-    events.forEach(event => {
-      // Create a list item for the event name
-      const li = document.createElement('li');
-      li.textContent = event.event_name;
-    
-      // Create a nested list for event details
-      const nestedUl = document.createElement('ul');
-    
-      // Add each detail as an indented bullet point
-      const details = [
-        `Date: ${event.event_date}`,
-        `Start Time: ${event.start_time}`,
-        `End Time: ${event.end_time}`,
-        `Calendar Source: ${event.calendar_source}`
-      ];
-    
-      details.forEach(detail => {
-        const detailLi = document.createElement('li');
-        detailLi.textContent = detail;
-        nestedUl.appendChild(detailLi);
-      });
-    
-      // Append the nested list to the main list item
-      li.appendChild(nestedUl);
+  async function loadEvents(){
+    try {
+      const response = await fetch('http://localhost:5000/events');
+      if (!response.ok) throw new Error('Failed to fetch events');
 
-      // Create buttons
-      const button1 = document.createElement('button');
-      button1.textContent = 'Edit';
+      const events = await response.json(); 
+      eventList.innerHTML = ''; 
+      
+      events.forEach(event=> {
+        // Create a list item for event name 
+        const li = document.createElement('li'); 
+        li.textContent = event.event_name; 
 
-      const button2 = document.createElement('button');
-      button2.textContent = 'Delete';
-      if (button2) {
-        button2.addEventListener('click', () => {
-          alert(`Deleting event: ${event.event_name}`);
+        const nestedUl = document.createElement('ul'); 
+
+        const details = [
+          `Date: ${event.event_date}`,
+          `Start Time: ${event.start_time}`,
+          `End Time: ${event.end_time}`,
+          `Calendar Source: ${event.calendar_source}`
+        ];
+
+        details.forEach(detail => {
+          const detailLi = document.createElement('li');
+          detailLi.textContent = detail;
+          nestedUl.appendChild(detailLi);
         });
-      }
 
-      // Append buttons to the list item
-      li.appendChild(button1);
-      li.appendChild(button2);
+        li.appendChild(nestedUl); 
 
-      // Append the main list item to the event list
-      eventList.appendChild(li);
-    });
-    
-  } 
-    catch (error) {
-      console.error('Error loading events:', error);
+        // Create buttons
+        const button1 = document.createElement('button');
+        button1.textContent = 'Edit';
+
+        const button2 = document.createElement('button');
+        button2.textContent = 'Delete';
+
+        button2.addEventListener('click', async () => {
+          if (confirm(`Are you sure you want to delete the event: ${event.event_name}?`)) {
+            try {
+              const deleteResponse = await fetch(`http://localhost:5000/events/${event.id}`, {
+                method: 'DELETE',
+              });
+
+              if (!deleteResponse.ok) throw new Error('Failed to delete the event');
+
+              // Remove the event from the displayed list
+              eventList.removeChild(li);
+              console.log(`Event "${event.name}" deleted`);
+            } catch (error) {
+              console.error('Error deleting event:', error);
+              console.log('Failed to delete the event');
+            }
+          }
+        }); 
+
+        li.appendChild(button1); 
+        li.appendChild(button2); 
+
+        eventList.appendChild(li); 
+      });
     }
-  });
+    catch (error) {
+      console.error('Error deleting:', error);
+    }
+  }
+  window.onload = loadEvents;  
 
-  //Event for creating an event
+  // Event for creating an event
   eventButton.addEventListener('click', async (event) => {
     // Prevent form from reloading the page
     event.preventDefault();
@@ -151,16 +160,16 @@ if(document.body.id == "event"){
       console.log('event information:', event_name, event_date, start_time, end_time, calendar_source);
 
       console.log('Event created successfully');
+      window.location.reload(); 
     } 
     catch (error) {
       console.error('Error creating event:', error);
     }
   });
-
 }
 
 if(document.body.id == "log"){
-  //Login Constants
+  // Login Constants
   const loginButton = document.getElementById('account-login');
 
   //Event for logging in users
@@ -168,12 +177,12 @@ if(document.body.id == "log"){
     // Prevent form from reloading the page
     event.preventDefault();
 
-    //Get values from form inputs
+    // Get values from form inputs
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
     try {
-      //Start API call send email and password to backend
+      // Start API call send email and password to backend
       const response = await fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: {
@@ -182,7 +191,7 @@ if(document.body.id == "log"){
         body: JSON.stringify({ email, password }),
       });
 
-      //Check login response
+      // Check login response
       if (!response.ok) throw new Error('Failed to log in');
       const userId = await response.json();
       console.log(userId);
@@ -190,7 +199,7 @@ if(document.body.id == "log"){
       window.location.href = 'events.html'; 
     }
     catch (error) {
-      console.error('Error signing up:', error);
+      console.error('Error logging in:', error);
     }
   });
 }

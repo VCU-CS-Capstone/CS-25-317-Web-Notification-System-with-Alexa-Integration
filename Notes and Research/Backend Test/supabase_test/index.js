@@ -86,6 +86,27 @@ app.post('/events', async (req, res) => {
 }
 });
 
+// Delete event 
+app.delete('/events/:id', async (req, res) => {
+  const event_id = req.params.id; 
+
+  try {
+    const {data, error} = await supabase
+    .from('events')
+    .delete()
+    .eq('id', event_id);
+
+    if (error) {
+      console.error('Supabase error:', error); 
+      return res.status(500).json({error: error.message}); 
+    }
+    res.json({message: `event: ${event_id} deleted`, data});
+  } catch (err) {
+      console.error('Unexpected error:', err); 
+      res.status(500).json({ error: 'An unexpected error has ocurred'});
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
