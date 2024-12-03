@@ -16,43 +16,59 @@ app.use(express.json());
 
 //Get all users
 app.get('/users', async (req, res) => {
+
   const { data, error } = await supabase
     .from('users')
     .select('*');
+
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
-//Get all events
+// Get user's events 
 app.get('/events', async (req, res) => {
+  
+  const { userid } = req.query; 
+  if (!userid) {
+    return res.status(400).json({error: 'Username is required '}); 
+  }
+
   const { data, error } = await supabase
     .from('events')
-    .select('*');
+    .select('*')
+    .eq('userid', userid);
+    
   if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
+  res.status(200).json(data);
 });
 
-//Add new user
+// Add new user
 app.post('/users', async (req, res) => {
+  
   const { username, email, password } = req.body;
   const { data, error } = await supabase
     .from('users')
     .insert({username: username, email: email, password: password}); 
+
   if (error) return res.status(500).json({ error: error.message });
   return res.status(201).json({ data });
 });
 
-//Login user
+// Login user
 app.post('/login', async (req, res) => {
+  
   const{ email, password } = req.body;
   const { data, error } = await supabase
     .from('users')
-    .select('password , id')
+    .select('password , id, username')
     .eq('email', email);
+
   if (error) return res.status(500).json({ error: error.message });
-  const id = data[0]?.id
-  if( data[0]?.password == password){
-    return res.status(201).json({ id });
+
+  const user = data[0];
+
+  if( user.password === password){
+    return res.status(201).json({id: user.id, username: user.username });
   }
   else{
     return res.status(401).json({ error: 'Unauthorized' });
@@ -63,6 +79,7 @@ app.post('/login', async (req, res) => {
 app.post('/events', async (req, res) => {
 
   const {event_name, start_time, end_time, event_date, calendar_source} = req.body; 
+
   try {
     const {data, error } = await supabase
     .from('events')
@@ -88,8 +105,8 @@ app.post('/events', async (req, res) => {
 
 // Delete event 
 app.delete('/events/:id', async (req, res) => {
+  
   const event_id = req.params.id; 
-
   try {
     const {data, error} = await supabase
     .from('events')

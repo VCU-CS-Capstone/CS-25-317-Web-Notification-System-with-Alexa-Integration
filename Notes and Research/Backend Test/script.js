@@ -1,7 +1,7 @@
 if(document.body.id == "sign"){
   //Show users constants
   //const loadUsersButton = document.getElementById('load-users');
-  const userList = document.getElementById('user-list');
+  //const userList = document.getElementById('user-list');
 
   // Sign Up Constants
   const signUpButton = document.getElementById('sign-up');
@@ -28,7 +28,6 @@ if(document.body.id == "sign"){
       console.error('Error loading users:', error);
     }
   });*/
-
  
   // Event for signing up
   signUpButton.addEventListener('click', async (event) => {
@@ -57,22 +56,34 @@ if(document.body.id == "sign"){
       console.error('Error signing up:', error);
     }
   });
-
 }
 
 if(document.body.id == "event"){
 
   // Show events constants
   const eventList = document.getElementById('event-list'); 
-  const eventButton = document.getElementById('event-button'); 
+  const eventButton = document.getElementById
+  ('event-button'); 
+  const username = localStorage.getItem('username'); 
 
+  // Event for displaying all events for the user 
   async function loadEvents(){
     try {
-      const response = await fetch('http://localhost:5000/events');
+
+      const userid = localStorage.getItem('userid'); 
+      if (!userid){
+        alert('You are not logged in!'); 
+        window.location.href = 'login.html'; 
+        return; 
+      }
+
+      const response = await fetch(`http://localhost:5000/events?userid=${userid}`);
       if (!response.ok) throw new Error('Failed to fetch events');
 
       const events = await response.json(); 
       eventList.innerHTML = ''; 
+      const usernameElement = document.getElementById('username-display');
+      usernameElement.textContent = `User: ${username}`;  
       
       events.forEach(event=> {
         // Create a list item for event name 
@@ -103,6 +114,7 @@ if(document.body.id == "event"){
         const button2 = document.createElement('button');
         button2.textContent = 'Delete';
 
+        // Event for delete button 
         button2.addEventListener('click', async () => {
           if (confirm(`Are you sure you want to delete the event: ${event.event_name}?`)) {
             try {
@@ -129,14 +141,14 @@ if(document.body.id == "event"){
       });
     }
     catch (error) {
-      console.error('Error deleting:', error);
+      console.error('Error in events:', error);
     }
   }
   window.onload = loadEvents;  
 
   // Event for creating an event
   eventButton.addEventListener('click', async (event) => {
-    // Prevent form from reloading the page
+
     event.preventDefault();
 
     // Get values from form inputs
@@ -193,10 +205,14 @@ if(document.body.id == "log"){
 
       // Check login response
       if (!response.ok) throw new Error('Failed to log in');
-      const userId = await response.json();
-      console.log(userId);
+      const data = await response.json();
+      const userid = data.id; 
+      const username = data.username; 
+      localStorage.setItem('userid', userid); 
+      localStorage.setItem('username', username);
 
       window.location.href = 'events.html'; 
+      
     }
     catch (error) {
       console.error('Error logging in:', error);
