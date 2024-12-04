@@ -8,7 +8,7 @@
 
 - Go to *./Backend Test* and open *index.html* in browser 
 
-You can log into the [Supabase Account](https://supabase.com/) with the Capstone Group email and password 
+You can log into the [Supabase Account](https://supabase.com/dashboard/sign-in) with the Capstone Group email and password 
 
 ## 12-03-24
 
