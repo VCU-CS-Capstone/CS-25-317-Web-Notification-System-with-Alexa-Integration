@@ -2,6 +2,8 @@
 
 ## How to Run 
 
+- *install node (will change eventually)
+
 - Go to *./Backend Test/supabase_test* directory 
 
 - use command *node index.js* to start server on http://localhost:5000
@@ -21,7 +23,7 @@ You can log into the [Supabase Account](https://supabase.com/dashboard/sign-in) 
 
 ## 12-04-24
 
-- fixed *add event* function to include the userid that's loggen in 
+- fixed *add event* function to include the userid that's logged in 
 - fixed event display to only display end time if not null 
 
 
