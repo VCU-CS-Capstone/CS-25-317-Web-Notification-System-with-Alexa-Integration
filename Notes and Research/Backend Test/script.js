@@ -93,11 +93,11 @@ if(document.body.id == "event"){
         const nestedUl = document.createElement('ul'); 
 
         const details = [
-          `Date: ${event.event_date}`,
-          `Start Time: ${event.start_time}`,
-          `End Time: ${event.end_time}`,
-          `Calendar Source: ${event.calendar_source}`
-        ];
+          event.event_date && `Date: ${event.event_date}`,
+          event.start_time && `Start Time: ${event.start_time}`,
+          event.end_time && `End Time: ${event.end_time}`,
+          event.calendar_source && `Calendar: ${event.calendar_source}`
+        ].filter(Boolean);
 
         details.forEach(detail => {
           const detailLi = document.createElement('li');
@@ -126,7 +126,7 @@ if(document.body.id == "event"){
 
               // Remove the event from the displayed list
               eventList.removeChild(li);
-              console.log(`Event "${event.name}" deleted`);
+              console.log(`Event "${event.event_name}" deleted`);
             } catch (error) {
               console.error('Error deleting event:', error);
               console.log('Failed to delete the event');
@@ -158,20 +158,19 @@ if(document.body.id == "event"){
     const end_time = document.getElementById('event-end-time').value || null;
     const calendar_source = document.getElementById('calendar-source').value; 
 
+    const userid = localStorage.getItem('userid'); 
+
     try {
       const response = await fetch('http://localhost:5000/events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ event_name, start_time, end_time, event_date, calendar_source}),
+        body: JSON.stringify({ event_name, start_time, end_time, event_date, calendar_source, userid}),
       });
 
       if (!response.ok) throw new Error('Failed to create event');
-
-      console.log('event information:', event_name, event_date, start_time, end_time, calendar_source);
-
-      console.log('Event created successfully');
+      
       window.location.reload(); 
     } 
     catch (error) {

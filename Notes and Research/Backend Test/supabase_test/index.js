@@ -78,7 +78,7 @@ app.post('/login', async (req, res) => {
 // Add Event 
 app.post('/events', async (req, res) => {
 
-  const {event_name, start_time, end_time, event_date, calendar_source} = req.body; 
+  const {event_name, start_time, end_time, event_date, calendar_source, userid} = req.body; 
 
   try {
     const {data, error } = await supabase
@@ -88,7 +88,8 @@ app.post('/events', async (req, res) => {
       start_time,
       end_time, 
       event_date, 
-      calendar_source}
+      calendar_source, 
+      userid}
   ]);
 
   if (error) {
