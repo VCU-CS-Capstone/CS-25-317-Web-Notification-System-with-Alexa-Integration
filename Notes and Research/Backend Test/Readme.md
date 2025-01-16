@@ -26,4 +26,10 @@ You can log into the [Supabase Account](https://supabase.com/dashboard/sign-in) 
 - fixed *add event* function to include the userid that's logged in 
 - fixed event display to only display end time if not null 
 
+Notes: 
+
+- display events in chronological order? 
+- add description to event
+- create *edit event* function 
+- add reminder information
 

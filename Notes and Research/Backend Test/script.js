@@ -94,6 +94,7 @@ if(document.body.id == "event"){
 
         const details = [
           event.event_date && `Date: ${event.event_date}`,
+          event.description && `Description: ${event.description}`,
           event.start_time && `Start Time: ${event.start_time}`,
           event.end_time && `End Time: ${event.end_time}`,
           event.calendar_source && `Calendar: ${event.calendar_source}`
@@ -156,7 +157,6 @@ if(document.body.id == "event"){
     const event_date = document.getElementById('event-date').value;
     const start_time = document.getElementById('event-start-time').value;
     const end_time = document.getElementById('event-end-time').value || null;
-    const calendar_source = document.getElementById('calendar-source').value; 
 
     const userid = localStorage.getItem('userid'); 
 
@@ -166,7 +166,7 @@ if(document.body.id == "event"){
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ event_name, start_time, end_time, event_date, calendar_source, userid}),
+        body: JSON.stringify({ event_name, start_time, end_time, event_date, userid}),
       });
 
       if (!response.ok) throw new Error('Failed to create event');
