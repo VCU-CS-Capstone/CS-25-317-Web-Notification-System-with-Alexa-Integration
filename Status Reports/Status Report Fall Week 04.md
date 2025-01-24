@@ -1,4 +1,4 @@
-# *CS 25-317 Reminder App with Zoom/Telehealth*
+# *CS 25-317 Reminder App with Alexa Integration*
 
 **Students' Names:**
 - Aryan Garg
