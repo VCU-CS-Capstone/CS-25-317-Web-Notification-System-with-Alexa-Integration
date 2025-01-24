@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Users API</title>
+</head>
+<!--Date and Time-->
+<body id = "add">
+  <button id="load-session">Session Console:</button>
+  <h2>Select Date and Time</h2>
+    <form>
+
+        <label>Event:</label>
+        <input type="event" class="form-control" id="name" placeholder="Enter Name of Event" name="event" required>
+        <br><br>
+
+        <!-- Date Picker -->
+        <label for="date">Select Date:</label>
+        <input type="date" id="date" name="date" required>
+        <br><br>
+
+        <!-- Start Time Picker -->
+        <label for="start-time">Start Time:</label>
+        <input type="time" id="start-time" name="start-time" required>
+        <br><br>
+
+        <!-- End Time Picker -->
+        <label for="end-time">End Time:</label>
+        <input type="time" id="end-time" name="end-time" required>
+        <br><br>
+
+        <label>Interval:</label>
+        <select id="interval">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+        </select>
+        <br><br>
+
+        <button type="submit" id="submit">Submit</button>
+    </form>
+
+  <script src = "remind_script.js"></script>
+
+</body>
+</html>

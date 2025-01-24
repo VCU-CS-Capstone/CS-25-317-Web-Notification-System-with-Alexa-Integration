@@ -28,7 +28,7 @@ app.post('/users', async (req, res) => {
   const { username, email, password } = req.body;
   const { data, error } = await supabase
     .from('users')
-    .insert({username: username, email: email, password: password}); 
+    .insert({username: username, email: email, password: password, role: 'user'}); 
   if (error) return res.status(500).json({ error: error.message });
   return res.status(201).json({ data });
 });
@@ -48,7 +48,18 @@ app.post('/login', async (req, res) => {
   else{
     return res.status(401).json({ error: 'Unauthorized' });
   }
-})
+});
+
+//Add new event
+app.post('/events', async (req, res) => {
+  const { name, date, start_time, end_time, interval, sessionId } = req.body;
+  const true_end = end_time ? end_time : null;;
+  const { data, error } = await supabase
+    .from('events')
+    .insert({event_name: name, start_time: start_time, end_time: true_end, event_date: date, interval: interval, userid: sessionId});
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(201).json({ data });
+});
 
 // Start server
 app.listen(PORT, () => {

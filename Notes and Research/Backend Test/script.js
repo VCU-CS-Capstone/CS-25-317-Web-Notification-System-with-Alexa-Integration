@@ -84,7 +84,11 @@ if(document.body.id == "log"){
       if (!response.ok) throw new Error('Failed to log in');
       const userId = await response.json();
 
-      console.log(userId);
+      //Get session id
+      const json = JSON.parse(JSON.stringify(userId));
+      localStorage.setItem('SessionId', json.id);
+      console.log('User logged in successfully');
+      console.log(localStorage.getItem('SessionId'));
     }
     catch (error) {
       console.error('Error signing up:', error);
