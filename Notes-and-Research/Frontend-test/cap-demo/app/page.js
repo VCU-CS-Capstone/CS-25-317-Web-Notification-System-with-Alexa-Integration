@@ -1,71 +1,43 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ReminderCard } from "./components/ReminderCard";
 import BottomNavbar from "./components/BottomNavbar";
-import { title } from "process";
 
-const reminders = [
-  {
-    id: 1,
-    title: "Buy Groceries",
-    time: "4:00 PM",
-    date: "2024-11-17",
-    description: "Milk, Bread, Eggs, and more.",
-  },
-  {
-    id: 2,
-    title: "Workout",
-    time: "2:00 PM",
-    date: "2024-11-17",
-    description: "Go to the gym and complete your routine.",
-  },
-  {
-    id: 3,
-    title: "Doctor's Appointment",
-    time: "11:00 AM",
-    date: "2024-11-18",
-    description: "Visit Dr. Smith for the annual check-up.",
-  },
-  {
-    id: 4,
-    title: "Meeting",
-    time: "5:00 PM",
-    date: "2024-11-18",
-    description: "Project team meeting in the conference room.",
-  },
-  {
-    id: 5,
-    title: "Morning Yoga",
-    time: "7:00 AM",
-    date: "2024-11-19",
-    description: "Attend yoga class at the park.",
-  },
-  {
-    id: 6,
-    title: "Call Mom",
-    time: "8:00 PM",
-    date: "2024-11-19",
-    description: "Catch up with Mom on the phone.",
-  },
-  {
-    id: 7,
-    title: "Homework",
-    time: "3:00 PM",
-    date: "2024-11-20",
-    description: "Complete math and science assignments.",
-  },
-  {
-    id: 8,
-    title: "Dinner Reservation",
-    time: "6:30 PM",
-    date: "2024-11-20",
-    description: "Dinner with Sarah at Olive Garden.",
-  },
-];
+const apiUrl = "http://localhost:5001/users/events?userid=1";
 
 const Home = () => {
+  const [reminders, setReminders] = useState([]);
   const [selectedReminder, setSelectedReminder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchReminders = async () => {
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error(
+            `API Error: ${response.status} - ${response.statusText}`
+          );
+        }
+        const data = await response.json();
+        const formattedData = data.map((event) => ({
+          id: event.id,
+          title: event.event_name,
+          time: event.start_time,
+          date: event.event_date,
+          description: `Interval: ${event.interval} minutes`,
+        }));
+        setReminders(formattedData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReminders();
+  }, []);
 
   const handleCardClick = (reminder) => {
     setSelectedReminder(reminder);
@@ -78,8 +50,14 @@ const Home = () => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-800">
       <div className="flex-grow p-4">
-        <h2 className="text-xl font-bold mb-4 text-center">Reminders</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h2 className="text-xl font-bold mb-4 text-center text-white">
+          Reminders
+        </h2>
+        {loading && (
+          <p className="text-center text-white">Loading reminders...</p>
+        )}
+        {error && <p className="text-center text-red-500">Error: {error}</p>}
+        <div className="grid place-items-center grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {reminders.map((reminder) => (
             <ReminderCard
               key={reminder.id}
@@ -94,10 +72,12 @@ const Home = () => {
       </div>
 
       {selectedReminder && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-2">{selectedReminder.title}</h3>
-            <p className="mb-4">{selectedReminder.description}</p>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-slate-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-xl font-bold mb-2 text-white">
+              {selectedReminder.title}
+            </h3>
+            <p className="mb-4 text-white">{selectedReminder.description}</p>
             <div className="flex justify-end space-x-4">
               <button
                 className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -119,7 +99,7 @@ const Home = () => {
         </div>
       )}
 
-      <BottomNavbar />
+      <BottomNavbar reminders={reminders} setReminders={setReminders} />
     </div>
   );
 };

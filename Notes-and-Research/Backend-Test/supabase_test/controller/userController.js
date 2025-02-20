@@ -1,4 +1,5 @@
 import supabase from "../config/supabaseClient.js";
+import bcrypt from "bcrypt";
 
 export const getAllUsers = async (req, res) => {
   try {
