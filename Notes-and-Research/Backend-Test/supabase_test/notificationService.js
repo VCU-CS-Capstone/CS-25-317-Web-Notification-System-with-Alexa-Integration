@@ -1,3 +1,4 @@
+//Intial Imports
 import admin from "firebase-admin";
 import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
@@ -30,6 +31,7 @@ const corsOptions = {
   allowedHeaders: "Content-Type, Authorization",
 };
 
+//Middleware to enable CORS and Express
 app.use(cors(corsOptions)); // Allow requests from the specified origin
 app.options("*", cors(corsOptions)); // Enable preflight for all routes
 app.use(express.json());
@@ -67,17 +69,29 @@ app.post("/save-token", async (req, res) => {
 async function sendReminderNotifications() {
   try {
     const currentTime = new Date();
+    currentTime.setDate(currentTime.getDate() - 1);
+
     const formattedDate = currentTime.toISOString().split("T")[0]; // YYYY-MM-DD
     const formattedTime = currentTime.toTimeString().split(" ")[0]; // HH:MM:SS
 
     const timeRangeInMinutes = 5;
+    const pastTime = new Date(currentTime.getTime() - timeRangeInMinutes * 60000);
     const futureTime = new Date(currentTime.getTime() + timeRangeInMinutes * 60000);
+
+    const formattedPastTime = pastTime.toTimeString().split(" ")[0];
     const formattedFutureTime = futureTime.toTimeString().split(" ")[0];
+
+    const userId = 1; // User ID you want to filter by
 
     // Fetch events from database
     const { data: events, error: eventError } = await supabase
       .from("events")
-      .select("id, event_name, event_date, start_time, userid");
+      .select("id, event_name, event_date, start_time, userid")
+      .eq("userid", userId)
+      .eq("event_date", formattedDate)
+      .gte("start_time", formattedPastTime)
+      .lte("start_time", formattedFutureTime);
+
 
     if (eventError) {
       console.error("Error fetching events:", eventError);
