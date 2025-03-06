@@ -69,17 +69,19 @@ app.post("/save-token", async (req, res) => {
 async function sendReminderNotifications() {
   try {
     const currentTime = new Date();
-    currentTime.setDate(currentTime.getDate() - 1);
-
+    currentTime.setHours(currentTime.getHours()); // Convert UTC to EST
+    
     const formattedDate = currentTime.toISOString().split("T")[0]; // YYYY-MM-DD
     const formattedTime = currentTime.toTimeString().split(" ")[0]; // HH:MM:SS
-
-    const timeRangeInMinutes = 5;
+    
+    const timeRangeInMinutes = 1;
     const pastTime = new Date(currentTime.getTime() - timeRangeInMinutes * 60000);
     const futureTime = new Date(currentTime.getTime() + timeRangeInMinutes * 60000);
-
+    
     const formattedPastTime = pastTime.toTimeString().split(" ")[0];
     const formattedFutureTime = futureTime.toTimeString().split(" ")[0];
+    
+    console.log(`Checking events for date: ${formattedDate}, time range: ${formattedPastTime} to ${formattedFutureTime}`);    
 
     const userId = 1; // User ID you want to filter by
 
@@ -151,7 +153,7 @@ async function sendReminderNotifications() {
 }
 
 // Run function every minute to check reminders
-setInterval(sendReminderNotifications, 15000);  // 15,000 ms = 15 seconds
+setInterval(sendReminderNotifications, 60000);  // 60,000 ms = 1 minute
 
 // Start Express server
 const PORT = 3000;
