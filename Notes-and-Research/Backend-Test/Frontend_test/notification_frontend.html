@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCM Notifications</title>
+
+    <!-- Firebase Compatibility Mode -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+</head>
+<body>
+    <h1>Firebase Cloud Messaging</h1>
+    <button id="notifyBtn">Enable Notifications</button>
+
+    <script>
+        // 🔹 Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1lMW1D2wtXDHsuFJKvuerRbRjK39y0YM",
+            authDomain: "cs-25-317.firebaseapp.com",
+            projectId: "cs-25-317",
+            storageBucket: "cs-25-317.firebasestorage.app",
+            messagingSenderId: "920068607900",
+            appId: "1:920068607900:web:e02406c989697efeec0259",
+            vapidKey: "BAloxObNIPRr9QujTLBgmGOQn_kVDcPlm9VXPXYOkJm3WVJLVcb2_SDJLMnw-JF3nYpdOwPtK2NO1hN0QrR30X8"
+        };
+
+        // 🔹 Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const messaging = firebase.messaging();
+
+        // 🔹 Register Service Worker (Ensure Only One Registration)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration('/Frontend_test/firebase-messaging-sw.js')
+                .then((registration) => {
+                    if (!registration) {
+                        return navigator.serviceWorker.register('/Frontend_test/firebase-messaging-sw.js');
+                    } else {
+                        console.log("Service Worker already registered:", registration.scope);
+                    }
+                })
+                .then((registration) => {
+                    if (registration) {
+                        console.log("Service Worker registered with scope:", registration.scope);
+                        messaging.useServiceWorker(registration);
+                    }
+                })
+                .catch((err) => console.error("Service Worker registration failed:", err));
+        }
+
+        // 🔹 Handle Notification Permission
+        document.getElementById("notifyBtn").addEventListener("click", () => {
+            Notification.requestPermission().then((permission) => {
+                if (permission === "granted") {
+                    console.log("Notification permission granted.");
+                    getTokenAndSendToBackend();
+                } else {
+                    console.warn("Notification permission denied.");
+                    alert("Notifications blocked!");
+                }
+            }).catch((err) => console.error("Error requesting permission:", err));
+        });
+
+        // 🔹 Get FCM Token
+        function getTokenAndSendToBackend() {
+            navigator.serviceWorker.ready.then((registration) => {
+                messaging.getToken({ vapidKey: firebaseConfig.vapidKey, serviceWorkerRegistration: registration })
+                    .then((token) => {
+                        if (token) {
+                            console.log("FCM Token:", token);
+                            sendTokenToBackend(token);
+                        } else {
+                            console.warn("No registration token available.");
+                        }
+                    })
+                    .catch((err) => console.error("Error getting FCM token:", err));
+            });
+        }
+
+        // 🔹 Send Token to Backend
+        function sendTokenToBackend(token) {
+            const userId = 1; // Replace with actual user ID from your app
+            fetch("http://localhost:3000/save-token", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, userId }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to save token: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => console.log("Token saved:", data))
+            .catch(error => {
+                console.error("Error saving token:", error);
+                alert(`Error saving token: ${error.message}`);
+            });
+        }
+
+        // 🔹 Handle Incoming Messages (When Page is Open)
+        messaging.onMessage((payload) => {
+            console.log("Message received:", payload);
+            
+            const { title, body } = payload.notification;
+            
+            // Display notification using the Notification API
+            if (Notification.permission === "granted") {
+                new Notification(title, {
+                    body: body,
+                    icon: "/icon.png", // Optional: Add an icon for the notification
+                    badge: "/badge.png", // Optional: Add a badge to the notification
+                });
+            }
+        });
+    </script>
+</body>
+</html>
