@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ReminderCard } from "./components/ReminderCard";
 import BottomNavbar from "./components/BottomNavbar";
+import Popup from "./components/Popup";
 
 const apiUrl = "http://localhost:5001/users/events?userid=1";
 
@@ -11,6 +12,41 @@ const Home = () => {
   const [selectedReminder, setSelectedReminder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const handleCardClick = (reminder) => {
+    setSelectedReminder(reminder);
+  };
+
+  const closePopup = () => {
+    setSelectedReminder(null);
+  };
+
+  const handleDelete = async () => {
+    const deleteUrl = `http://localhost:5001/users/events/${selectedReminder.id}`;
+    try {
+      const response = await fetch(deleteUrl, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("API Response Status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log("API Response Data:", result);
+
+      // Refresh the page
+      closePopup(); // Close the popup
+    } catch (error) {
+      console.error("Error deleting reminder:", error.message);
+    }
+  };
 
   useEffect(() => {
     const fetchReminders = async () => {
@@ -37,24 +73,16 @@ const Home = () => {
       }
     };
     fetchReminders();
-  }, []);
-
-  const handleCardClick = (reminder) => {
-    setSelectedReminder(reminder);
-  };
-
-  const closePopup = () => {
-    setSelectedReminder(null);
-  };
+  }, [handleDelete]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-800">
+    <div className="min-h-screen flex flex-col bg-white">
       <div className="flex-grow p-4">
-        <h2 className="text-xl font-bold mb-4 text-center text-white">
+        <h2 className="text-xl font-bold mb-4 text-center text-gray-800">
           Reminders
         </h2>
         {loading && (
-          <p className="text-center text-white">Loading reminders...</p>
+          <p className="text-center text-gray-800">Loading reminders...</p>
         )}
         {error && <p className="text-center text-red-500">Error: {error}</p>}
         <div className="grid place-items-center grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
@@ -72,31 +100,11 @@ const Home = () => {
       </div>
 
       {selectedReminder && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-slate-800 p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-xl font-bold mb-2 text-white">
-              {selectedReminder.title}
-            </h3>
-            <p className="mb-4 text-white">{selectedReminder.description}</p>
-            <div className="flex justify-end space-x-4">
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-                onClick={closePopup}
-              >
-                Close
-              </button>
-              <button className="bg-green-500 text-white px-4 py-2 rounded">
-                Option 1
-              </button>
-              <button className="bg-yellow-500 text-white px-4 py-2 rounded">
-                Option 2
-              </button>
-              <button className="bg-red-500 text-white px-4 py-2 rounded">
-                Option 3
-              </button>
-            </div>
-          </div>
-        </div>
+        <Popup
+          selectedReminder={selectedReminder}
+          closePopup={closePopup}
+          handleDelete={handleDelete}
+        />
       )}
 
       <BottomNavbar reminders={reminders} setReminders={setReminders} />

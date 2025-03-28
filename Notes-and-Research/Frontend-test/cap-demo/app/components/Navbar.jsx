@@ -29,7 +29,7 @@ const ResponsiveNavbar = () => {
   return (
     <div className="  p-8">
       {/* Navbar */}
-      <div className="navbar navbar-sticky   bg-slate-700  ">
+      <div className="navbar navbar-sticky   bg-[#73FF00] text-black ">
         <div className="flex items-center justify-between w-full">
           {/* Drawer Toggle Button (Small Screens) */}
           <button
@@ -40,7 +40,9 @@ const ResponsiveNavbar = () => {
           </button>
 
           {/* Logo */}
-          <a className="font-bold text-lg">MyApp</a>
+          <a href="/" className="font-bold text-lg">
+            MyLogo
+          </a>
 
           {/* Navbar Links (Visible on Medium Screens and Larger) */}
           <div className="hidden md:flex gap-4">

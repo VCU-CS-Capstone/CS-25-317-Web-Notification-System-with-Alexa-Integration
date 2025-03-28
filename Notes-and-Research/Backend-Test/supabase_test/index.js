@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import userRoute from "./routes/userRoute.js";
 import eventRoute from "./routes/eventRoute.js";
-import notificationRoute from "./routes/notificationRoute.js";
+// import notificationRoute from "./routes/notificationRoute.js";
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -17,7 +17,7 @@ app.use(express.json());
 
 app.use("/users", userRoute);
 app.use("/users/events", eventRoute);
-app.use("/notifications", notificationRoute);
+// app.use("/notifications", notificationRoute);
 
 // Start server
 app.listen(PORT, () => {
