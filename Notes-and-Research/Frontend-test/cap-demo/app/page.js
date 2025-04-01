@@ -63,7 +63,7 @@ const Home = () => {
           title: event.event_name,
           time: event.start_time,
           date: event.event_date,
-          description: `Interval: ${event.interval} minutes`,
+          // description: `Interval: ${event.interval} minutes`,
         }));
         setReminders(formattedData);
       } catch (err) {
@@ -74,6 +74,21 @@ const Home = () => {
     };
     fetchReminders();
   }, [handleDelete]);
+
+  function tConvert(time) {
+    // Check correct time format and split into components
+    time = time
+      .toString()
+      .match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+
+    if (time.length > 1) {
+      // If time format correct
+      time = time.slice(1); // Remove full string match value
+      time[5] = +time[0] < 12 ? "AM" : "PM"; // Set AM/PM
+      time[0] = +time[0] % 12 || 12; // Adjust hours
+    }
+    return time.join(""); // return adjusted time or original string
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -89,9 +104,9 @@ const Home = () => {
           {reminders.map((reminder) => (
             <ReminderCard
               key={reminder.id}
-              description={reminder.description}
+              // description={reminder.description}
               title={reminder.title}
-              time={reminder.time}
+              time={tConvert(reminder.time)}
               date={reminder.date}
               onClick={() => handleCardClick(reminder)}
             />

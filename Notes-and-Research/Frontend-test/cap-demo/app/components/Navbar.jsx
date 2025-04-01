@@ -41,7 +41,7 @@ const ResponsiveNavbar = () => {
 
           {/* Logo */}
           <a href="/" className="font-bold text-lg">
-            MyLogo
+            RemindME
           </a>
 
           {/* Navbar Links (Visible on Medium Screens and Larger) */}
