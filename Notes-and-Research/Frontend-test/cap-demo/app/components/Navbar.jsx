@@ -62,28 +62,37 @@ const ResponsiveNavbar = () => {
       {/* Drawer and Backdrop */}
       {isDrawerOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-50"
+          className="fixed inset-0 bg-black  bg-opacity-50 z-50"
           onClick={closeDrawer} // Close drawer when backdrop is clicked
         >
           {/* Drawer Content */}
           <div
-            className="fixed top-0 left-0 bg-slate-700 w-72 h-full shadow-md z-50 p-4"
+            className="fixed top-0 left-0 bg-[#73FF00]  w-72 h-full shadow-md z-50 p-4"
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the drawer
           >
             <button
-              className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+              className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-black"
               onClick={closeDrawer}
             >
               ✕
             </button>
             <nav className="mt-8 flex flex-col gap-4">
-              <a href="#calendar" className="text-lg hover:text-blue-600">
+              <a
+                href="#calendar"
+                className="text-lg hover:text-blue-600 text-black"
+              >
                 Calendar
               </a>
-              <a href="#help" className="text-lg hover:text-blue-600">
+              <a
+                href="#help"
+                className="text-lg hover:text-blue-600 text-black"
+              >
                 Help
               </a>
-              <a href="#signin" className="text-lg hover:text-blue-600">
+              <a
+                href="#signin"
+                className="text-lg hover:text-blue-600 text-black"
+              >
                 Sign In
               </a>
             </nav>

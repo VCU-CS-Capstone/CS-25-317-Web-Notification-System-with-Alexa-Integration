@@ -1,9 +1,10 @@
-/* public/firebase-messaging-sw.js */
+// public/firebase-messaging-sw.js
+
 importScripts(
-  "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"
+  "https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"
 );
 importScripts(
-  "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"
+  "https://www.gstatic.com/firebasejs/9.6.10/firebase-messaging-compat.js"
 );
 
 firebase.initializeApp({
@@ -18,10 +19,17 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const { title, body } = payload.notification;
-  self.registration.showNotification(title, {
-    body,
-    icon: "/icon.png",
-    badge: "/badge.png",
-  });
+  console.log(
+    "[firebase-messaging-sw.js] Received background message",
+    payload
+  );
+
+  const notificationTitle = payload?.notification?.title || "Notification";
+  const notificationOptions = {
+    body: payload?.notification?.body || "You have a new message.",
+    icon: "/icon.png", // Optional: Replace with your logo
+    data: payload?.data || {},
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });

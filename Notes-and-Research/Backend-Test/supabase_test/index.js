@@ -2,11 +2,11 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { WebSocketServer } from "ws";
 
 dotenv.config();
 import userRoute from "./routes/userRoute.js";
 import eventRoute from "./routes/eventRoute.js";
-import notificationRoute from "./routes/notificationRoute.js";
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -17,9 +17,50 @@ app.use(express.json());
 
 app.use("/users", userRoute);
 app.use("/users/events", eventRoute);
-app.use("/notifications", notificationRoute);
+
+// Create a WebSocket server
+const wss = new WebSocketServer({ noServer: true });
+
+// Handle WebSocket connections
+wss.on("connection", (ws) => {
+  console.log("Client connected");
+
+  // Send a welcome message
+  ws.send(
+    JSON.stringify({
+      title: "Welcome",
+      body: "Connected to notification service",
+    })
+  );
+
+  // Handle messages from clients
+  ws.on("message", (message) => {
+    console.log("Received message:", message);
+  });
+
+  // Handle client disconnection
+  ws.on("close", () => {
+    console.log("Client disconnected");
+  });
+});
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+});
+
+server.on("upgrade", (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit("connection", ws, request);
+  });
+});
+wss.clients.forEach((client) => {
+  if (client.readyState === client.OPEN) {
+    client.send(
+      JSON.stringify({
+        title: "Event Reminder",
+        body: `Upcoming Event: ${event.event_name} at ${event.start_time}`,
+      })
+    );
+  }
 });

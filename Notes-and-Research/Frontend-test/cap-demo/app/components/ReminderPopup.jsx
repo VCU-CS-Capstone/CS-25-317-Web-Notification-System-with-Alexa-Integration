@@ -3,22 +3,22 @@ import React from "react";
 const ReminderPopup = ({ closeForm, loading, handleFormSubmit }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-[#73FF00] p-6 rounded-lg shadow-lg w-96">
-        <h3 className="text-xl text-black font-bold mb-4">Create a Reminder</h3>
+      <div className="bg-blue-600  p-6 rounded-lg shadow-lg w-96">
+        <h3 className="text-xl text-white font-bold mb-4">Create a Reminder</h3>
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-black">
+            <label className="block text-sm font-medium text-white">
               Title
             </label>
             <input
               type="text"
               name="title"
               required
-              className="w-full border rounded p-2 bg-white text-black" // Added bg-white and text-black for better visibility
+              className="w-full border rounded p-2 bg-white text-black"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black">Time</label>
+            <label className="block text-sm font-medium text-white">Time</label>
             <input
               type="time"
               name="time"
@@ -26,8 +26,9 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit }) => {
               className="w-full border rounded p-2 bg-white text-black"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-black">Date</label>
+            <label className="block text-sm font-medium text-white">Date</label>
             <input
               type="date"
               name="date"

@@ -7,6 +7,7 @@ import {
   isSupported,
 } from "firebase/messaging";
 
+// Firebase client config
 const firebaseConfig = {
   apiKey: "AIzaSyA1lMW1D2wtXDHsuFJKvuerRbRjK39y0YM",
   authDomain: "cs-25-317.firebaseapp.com",
@@ -14,16 +15,18 @@ const firebaseConfig = {
   storageBucket: "cs-25-317.firebasestorage.app",
   messagingSenderId: "920068607900",
   appId: "1:920068607900:web:e02406c989697efeec0259",
-  vapidKey:
-    "BAloxObNIPRr9QujTLBgmGOQn_kVDcPlm9VXPXYOkJm3WVJLVcb2_SDJLMnw-JF3nYpdOwPtK2NO1hN0QrR30X8",
 };
 
+// Initialize Firebase app (only once)
 const app = initializeApp(firebaseConfig);
 
-// Ensure Messaging is supported (Next.js SSR-safe)
-const messaging =
-  typeof window !== "undefined" && (await isSupported())
-    ? getMessaging(app)
-    : null;
+// Async-safe messaging getter
+export const getFirebaseMessaging = async () => {
+  if (typeof window === "undefined") return null;
 
-export { messaging, firebaseConfig };
+  const supported = await isSupported();
+  return supported ? getMessaging(app) : null;
+};
+
+// Named exports for use in NotificationSetup
+export { getToken, onMessage };
