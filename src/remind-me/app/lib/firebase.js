@@ -1,5 +1,9 @@
 // lib/firebase.js
 import { initializeApp } from "firebase/app";
+
+const API_KEY = process.env.FIREBASE_API_KEY;
+const APP_ID = process.env.FIREBASE_APP_ID;
+
 import {
   getMessaging,
   getToken,
@@ -9,12 +13,12 @@ import {
 
 // Firebase client config
 const firebaseConfig = {
-  apiKey: "AIzaSyA1lMW1D2wtXDHsuFJKvuerRbRjK39y0YM",
+  apiKey: API_KEY,
   authDomain: "cs-25-317.firebaseapp.com",
   projectId: "cs-25-317",
   storageBucket: "cs-25-317.firebasestorage.app",
   messagingSenderId: "920068607900",
-  appId: "1:920068607900:web:e02406c989697efeec0259",
+  appId: APP_ID,
 };
 
 // Initialize Firebase app (only once)

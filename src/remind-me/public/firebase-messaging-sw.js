@@ -1,5 +1,8 @@
 // public/firebase-messaging-sw.js
 
+const API_KEY = process.env.FIREBASE_API_KEY;
+const APP_ID = process.env.FIREBASE_APP_ID;
+
 importScripts(
   "https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"
 );
@@ -8,12 +11,12 @@ importScripts(
 );
 
 firebase.initializeApp({
-  apiKey: "AIzaSyA1lMW1D2wtXDHsuFJKvuerRbRjK39y0YM",
+  apiKey: API_KEY,
   authDomain: "cs-25-317.firebaseapp.com",
   projectId: "cs-25-317",
   storageBucket: "cs-25-317.firebasestorage.app",
   messagingSenderId: "920068607900",
-  appId: "1:920068607900:web:e02406c989697efeec0259",
+  appId: APP_ID,
 });
 
 const messaging = firebase.messaging();

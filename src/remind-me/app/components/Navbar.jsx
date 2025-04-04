@@ -53,7 +53,7 @@ const ResponsiveNavbar = () => {
               Help
             </Link>
             <Link href="/" className="hover:underline">
-              Sign In
+              Sign Out
             </Link>
           </div>
         </div>

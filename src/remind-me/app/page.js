@@ -1,12 +1,29 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "./lib/supabaseClient"; // Import Supabase client
 
 export default function HomePage() {
   const router = useRouter();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleLogin = async ()=> {
+    setErrorMsg(""); 
+    const {data, error} = await supabase
+      .from("users")
+      .select("*")
+      .eq("username", username)
+      .single(); 
+    
+    if (error || !data || data.password != password) {
+      setErrorMsg("Invalid username or password");  // If credentials don't match
+      return; 
+    }
+    router.push("/dashboard");  // Otherwise, continue to site
+  };
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -26,7 +43,7 @@ export default function HomePage() {
                 id="username"
                 name="username"
                 type="text"
-                autoComplete="username"
+                autoComplete="off"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -42,7 +59,7 @@ export default function HomePage() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="off"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -52,14 +69,15 @@ export default function HomePage() {
           </div>
 
           <button
-            onClick={() => {
-              localStorage.setItem("user", "true");
-              router.push("/dashboard");
-            }}
+            onClick={handleLogin} // Check Credentials
             className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Sign In
           </button>
+
+          {errorMsg && (
+            <p className="text-red-500 text-sm text-center">{errorMsg}</p>
+          )}
         </div>
       </div>
     </main>
