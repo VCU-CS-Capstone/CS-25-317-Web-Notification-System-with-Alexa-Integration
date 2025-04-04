@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "./lib/supabaseClient"; // Import Supabase client
+import '../styles/globals.css';
 
 export default function HomePage() {
   const router = useRouter();
