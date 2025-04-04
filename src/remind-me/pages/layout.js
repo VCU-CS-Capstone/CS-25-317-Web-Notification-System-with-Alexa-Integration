@@ -15,11 +15,6 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export const metadata = {
-  title: "Remind Me",
-  description: "Created by VCU Capstone 2025",
-};
-
 export default function RootLayout({ children }) {
 
   return (
