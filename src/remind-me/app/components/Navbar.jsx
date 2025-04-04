@@ -40,7 +40,7 @@ const ResponsiveNavbar = () => {
           </button>
 
           {/* Logo */}
-          <a href="/" className="font-bold text-2xl">
+          <a href="/dashboard" className="font-bold text-2xl">
             RemindME
           </a>
 
@@ -52,7 +52,7 @@ const ResponsiveNavbar = () => {
             <Link href="/instructions" className="hover:underline">
               Help
             </Link>
-            <Link href="#signin" className="hover:underline">
+            <Link href="/" className="hover:underline">
               Sign In
             </Link>
           </div>
