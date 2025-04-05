@@ -1,8 +1,8 @@
 // lib/firebase.js
 import { initializeApp } from "firebase/app";
 
-const API_KEY = process.env.FIREBASE_API_KEY;
-const APP_ID = process.env.FIREBASE_APP_ID;
+const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+const APP_ID = process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
 
 import {
   getMessaging,
