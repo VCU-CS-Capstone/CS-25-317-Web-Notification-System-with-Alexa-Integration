@@ -6,6 +6,7 @@ import BottomNavbar from "../components/BottomNavbar";
 import { Popup } from "../components/Popup";
 import { supabase } from "../lib/supabaseClient"; // Import Supabase client
 import dynamic from "next/dynamic";
+import { getFirebaseMessaging, getToken } from "../lib/firebase"; 
 
 // Dynamically import NotificationSetup with explicit default export
 const NotificationSetup = dynamic(
@@ -18,6 +19,50 @@ const Dashboard = () => {
   const [selectedReminder, setSelectedReminder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notificationPermission, setNotificationPermission] = useState(false);
+
+  useEffect(() => {
+    // Request notification permission on page load
+    async function requestNotificationPermission() {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        // Get the token from Firebase and save it to your backend
+        const token = await getTokenFromFirebase();
+        const userId = 1; // Replace with the actual user ID
+        await saveTokenToBackend(token, userId);
+      } else {
+        console.error("Notification permission denied");
+      }
+    }
+
+    // Call the permission request function
+    requestNotificationPermission();
+  }, []);
+
+  // Function to retrieve the token from Firebase
+  async function getTokenFromFirebase() {
+    const messaging = await getFirebaseMessaging();
+    if (messaging) {
+      const currentToken = await getToken(messaging, {
+        vapidKey: "BAloxObNIPRr9QujTLBgmGOQn_kVDcPlm9VXPXYOkJm3WVJLVcb2_SDJLMnw-JF3nYpdOwPtK2NO1hN0QrR30X8", 
+      });
+      return currentToken;
+    }
+    return null;
+  }
+
+  // Function to save token to your backend (e.g., Express server)
+  async function saveTokenToBackend(token, userId) {
+    const response = await fetch("http://localhost:3000/save-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, userId }),
+    });
+    const data = await response.json();
+    if (data.message) {
+      console.log("Token saved successfully:", data.message);
+    }
+  }
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -40,8 +85,8 @@ const Dashboard = () => {
     setSelectedReminder(null);
   };
 
-   // Use Supabase to fetch reminders
-   const fetchReminders = async () => {
+  // Use Supabase to fetch reminders
+  const fetchReminders = async () => {
     setLoading(true);
     setError(null);
     try {

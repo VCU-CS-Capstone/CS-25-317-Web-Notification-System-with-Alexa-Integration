@@ -1,8 +1,5 @@
 // public/firebase-messaging-sw.js
 
-const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-const APP_ID = process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
-
 importScripts(
   "https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"
 );
@@ -11,12 +8,12 @@ importScripts(
 );
 
 firebase.initializeApp({
-  apiKey: API_KEY,
+  apiKey: "AIzaSyA1lMW1D2wtXDHsuFJKvuerRbRjK39y0YM",
   authDomain: "cs-25-317.firebaseapp.com",
   projectId: "cs-25-317",
   storageBucket: "cs-25-317.firebasestorage.app",
   messagingSenderId: "920068607900",
-  appId: APP_ID,
+  appId: "1:920068607900:web:e02406c989697efeec0259",
 });
 
 const messaging = firebase.messaging();
@@ -30,7 +27,7 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload?.notification?.title || "Notification";
   const notificationOptions = {
     body: payload?.notification?.body || "You have a new message.",
-    icon: "/icon.png", // Optional: Replace with your logo
+    //icon: Optional: Replace with your logo
     data: payload?.data || {},
   };
 
