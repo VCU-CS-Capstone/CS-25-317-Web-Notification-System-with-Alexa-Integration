@@ -1,6 +1,6 @@
 // Initial Imports
 import admin from "firebase-admin";
-import { supabase } from "./lib/supabaseClient";
+import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
 import express from "express";
 import cors from "cors";
@@ -8,7 +8,7 @@ import cors from "cors";
 // Initialize Firebase Admin SDK
 const serviceAccount = JSON.parse(
   fs.readFileSync(
-    "./cs-25-317-firebase-adminsdk-fbsvc-cce23c1328.json",
+    "../cs-25-317-firebase-adminsdk-fbsvc-cce23c1328.json",
     "utf-8"
   )
 );
@@ -16,6 +16,11 @@ const serviceAccount = JSON.parse(
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
+
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_API_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Express setup
 const app = express();

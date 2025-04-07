@@ -6,13 +6,14 @@ import BottomNavbar from "../components/BottomNavbar";
 import { Popup } from "../components/Popup";
 import { supabase } from "../lib/supabaseClient"; // Import Supabase client
 import dynamic from "next/dynamic";
-import { getFirebaseMessaging, getToken } from "../lib/firebase"; 
+import { getFirebaseMessaging, getToken, onMessage} from "../lib/firebase"; 
 
 // Dynamically import NotificationSetup with explicit default export
 const NotificationSetup = dynamic(
   () => import("../components/NotificationSetup").then((mod) => mod.default),
   { ssr: false }
 );
+
 
 const Dashboard = () => {
   const [reminders, setReminders] = useState([]);
@@ -22,21 +23,39 @@ const Dashboard = () => {
   const [notificationPermission, setNotificationPermission] = useState(false);
 
   useEffect(() => {
-    // Request notification permission on page load
-    async function requestNotificationPermission() {
-      const permission = await Notification.requestPermission();
-      if (permission === "granted") {
-        // Get the token from Firebase and save it to your backend
-        const token = await getTokenFromFirebase();
-        const userId = 1; // Replace with the actual user ID
-        await saveTokenToBackend(token, userId);
-      } else {
-        console.error("Notification permission denied");
-      }
-    }
+    const setupMessaging = async () => {
+      try {
+        const messaging = await getFirebaseMessaging();
+        if (!messaging) {
+          console.error('Firebase messaging is not supported in this environment');
+          return;
+        }
 
-    // Call the permission request function
-    requestNotificationPermission();
+        // Request permission
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          console.warn('Notification permission not granted');
+          return;
+        }
+
+        // Get FCM token
+        const token = await getToken(messaging, {
+          vapidKey: 'BAloxObNIPRr9QujTLBgmGOQn_kVDcPlm9VXPXYOkJm3WVJLVcb2_SDJLMnw-JF3nYpdOwPtK2NO1hN0QrR30X8',
+        });
+        console.log('FCM Token:', token);
+
+        // Handle foreground messages
+        onMessage(messaging, (payload) => {
+          console.log('Foreground message received:', payload);
+          const { title, body } = payload.notification;
+          new Notification(title, { body });
+        });
+      } catch (err) {
+        console.error('Error setting up messaging:', err);
+      }
+    };
+
+    setupMessaging();
   }, []);
 
   // Function to retrieve the token from Firebase
@@ -192,3 +211,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
