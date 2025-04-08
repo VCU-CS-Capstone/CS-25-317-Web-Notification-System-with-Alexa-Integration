@@ -86,30 +86,63 @@ app.post("/save-token", async (req, res) => {
   }
 });
 
-// Endpoint to retrieve logs
-app.post("/test-send", async (req, res) => {
-  const { token } = req.body;
-  const message = {
-    notification: {
-      title: "Test",
-      body: "This is a test message",
-    },
-    token,
-  };
+async function sendNotificationToUser(event) {
+  const { data: userDevices, error: deviceError } = await supabase
+    .from("user_devices")
+    .select("device_token")
+    .eq("user_id", event.userid);
 
-  try {
-    const response = await admin.messaging().send(message);
-    res.status(200).json({ success: true, response });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.toString() });
+  if (deviceError) {
+    console.error("Error fetching device tokens:", deviceError);
+    return;
   }
-});
+
+  if (!userDevices || userDevices.length === 0) {
+    console.log(`No registered devices for user ID: ${event.userid}`);
+    return;
+  }
+
+  for (const device of userDevices) {
+    const token = device.device_token;
+    const message = {
+      notification: {
+        title: "Event Reminder",
+        body: `Upcoming Event: ${event.event_name} at ${event.start_time}`,
+      },
+      token: token
+    };
+
+    try {
+      const response = await admin.messaging().send(message);
+      console.log(`Notification sent for event: ${event.event_name} to token: ${token.substring(0, 10)}...`);
+      console.log("FCM Response:", response);
+    } catch (err) {
+      console.error(`FCM Error for token ${token.substring(0, 10)}...`, err);
+    }
+  }
+}
+
+function strToTime(timeStr){
+  const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+  const now = new Date();
+  now.setHours(hours, minutes, seconds || 0, 0);
+  return now;
+}
+
+//Hashmap to store events for interval checking
+const eventsMap = new Map();
 
 // Function to check upcoming events and send notifications
 async function sendReminderNotifications() {
   try {
     const currentTime = new Date();
-    const timeZone = "America/New_York"; // EST timezone
+    currentTime.setDate(currentTime.getDate());
+    currentTime.setHours(currentTime.getHours()); // Convert UTC to EST
+
+    currentTime.setSeconds(0);
+    currentTime.setMilliseconds(0);
+    
+    
     const timeRangeInMinutes = 1;
 
     // Format current date and time in EST using locale options
@@ -148,14 +181,16 @@ async function sendReminderNotifications() {
 
     const userId = 1; // Example user ID
 
-    // Fetch events for the specified user, date, and time range
-    const { data: events, error: eventError } = await supabase
-      .from("events")
-      .select("id, event_name, event_date, start_time, userid")
-      .eq("userid", userId)
-      .eq("event_date", formattedDate)
-      .gte("start_time", formattedPastTime)
-      .lte("start_time", formattedFutureTime);
+    // Fetch events from database
+    const { data: events, error: eventError } = await supabase.rpc(
+      'get_events_with_adjusted_time',
+      {
+        p_user_id: userId,
+        p_target_date: formattedDate,
+        p_past_time: formattedPastTime,
+        p_future_time: formattedFutureTime
+      }
+    );
 
     if (eventError) {
       addLog("Error fetching events: " + JSON.stringify(eventError));
@@ -163,63 +198,44 @@ async function sendReminderNotifications() {
     }
 
     if (!events || events.length === 0) {
-      addLog("No events scheduled within the specified time range.");
-      return;
+      console.log("No events scheduled within the specified time range.");
+      
     }
 
-    addLog("Fetched events: " + JSON.stringify(events));
 
     // Process each event to send notifications
     for (const event of events) {
-      // Fetch device tokens for the user associated with this event
-      const { data: userDevices, error: deviceError } = await supabase
-        .from("user_devices")
-        .select("device_token")
-        .eq("user_id", event.userid);
+      //Add event time and adjusted for reccurent notifications
+      const eventTime = new Date(`${event.event_date}T${event.start_time}`);
+      const adjustedTime = new Date(eventTime.getTime() - event.interval * 60000);
+      eventsMap.set(
+        event,         
+        adjustedTime.toTimeString().split(" ")[0] 
+      );
+    }
 
-      if (deviceError) {
-        addLog("Error fetching device tokens: " + JSON.stringify(deviceError));
-        continue;
+    for (const [event, adjustedTime] of eventsMap) {
+
+      console.log(`Event: ${event.event_name}, Adjusted Time: ${adjustedTime}`);
+
+      
+      const f = strToTime(formattedTime);
+      const a = strToTime(adjustedTime);
+
+      console.log(`Current Time: ${f.getTime()}, Adjusted Time: ${a.getTime()}`);
+      console.log(`Check: ${((f.getTime() - a.getTime())/1000/60)%5 === 0}`);
+
+      if(formattedTime === event.start_time){
+        await sendNotificationToUser(event);
+        eventsMap.delete(event);
+        console.log(`Event ${event.event_name} removed from eventsMap.`);
       }
-
-      if (!userDevices || userDevices.length === 0) {
-        addLog(`No registered devices for user ID: ${event.userid}`);
-        continue;
-      }
-
-      // Log each token being used
-      userDevices.forEach((device) => {
-        addLog(
-          `Attempting to send notification using token: ${device.device_token}`
-        );
-      });
-
-      // Send notification to each token individually
-      for (const device of userDevices) {
-        const deviceToken = device.device_token;
-        const message = {
-          notification: {
-            title: "Event Reminder",
-            body: `Upcoming Event: ${event.event_name} at ${event.start_time}`,
-          },
-          token: deviceToken,
-        };
-
-        try {
-          const response = await admin.messaging().send(message);
-          addLog(
-            `Notification sent for event: ${
-              event.event_name
-            } to token: ${deviceToken.substring(0, 10)}...`
-          );
-          addLog("FCM Response: " + response);
-        } catch (err) {
-          addLog(
-            `FCM Error for token ${deviceToken.substring(0, 10)}...: ${err}`
-          );
-        }
+      else if(((f.getTime() - a.getTime())/1000/60)%5 === 0){
+        await sendNotificationToUser(event);
+        console.log(`Event ${event.event_name} sent to user.`);
       }
     }
+    
   } catch (error) {
     addLog("Error in sendReminderNotifications: " + error);
   }
