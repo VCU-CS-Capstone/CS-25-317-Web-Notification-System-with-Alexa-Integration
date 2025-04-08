@@ -198,7 +198,7 @@ async function sendReminderNotifications() {
 setInterval(sendReminderNotifications, 60000);  // 60,000 ms = 1 minute
 
 // Start Express server
-const PORT = 3000;
+const PORT = 3002;
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
 });
