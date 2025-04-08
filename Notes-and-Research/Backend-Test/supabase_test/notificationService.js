@@ -142,8 +142,6 @@ async function sendReminderNotifications() {
     currentTime.setSeconds(0);
     currentTime.setMilliseconds(0);
     
-    const formattedDate = currentTime.toISOString().split("T")[0]; // YYYY-MM-DD
-    const formattedTime = currentTime.toTimeString().split(" ")[0]; // HH:MM:SS
     
     const timeRangeInMinutes = 1;
 
