@@ -14,13 +14,13 @@ const NotificationSetup = dynamic(
   { ssr: false }
 );
 
-
 const Dashboard = () => {
   const [reminders, setReminders] = useState([]);
   const [selectedReminder, setSelectedReminder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notificationPermission, setNotificationPermission] = useState(false);
+
 
   useEffect(() => {
     const setupMessaging = async () => {
@@ -105,17 +105,22 @@ const Dashboard = () => {
   };
 
   // Use Supabase to fetch reminders
-  const fetchReminders = async () => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const fetchReminders = async (date = new Date()) => {
     setLoading(true);
     setError(null);
     try {
+      const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD
       const { data, error } = await supabase
-        .from("events") 
+        .from("events")
         .select("*")
-        .eq("userid", 1); // Filter by user ID
-
+        .eq("userid", 1)
+        .eq("event_date", formattedDate) // Filter by selected date
+        .order("start_time", {ascending:true});
+  
       if (error) throw error;
-
+  
       const formattedData = data.map((event) => ({
         id: event.id,
         title: event.event_name,
@@ -129,6 +134,8 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+  
+
 
   // Use Supabase to delete reminders
   const handleDelete = async () => {
@@ -150,8 +157,9 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchReminders();
-  }, []);
+    fetchReminders(selectedDate);
+  }, [selectedDate]);
+  
 
   function tConvert(time) {
     // Convert 24-hour time to 12-hour format with AM/PM
@@ -204,7 +212,12 @@ const Dashboard = () => {
           />
         )}
 
-        <BottomNavbar reminders={reminders} setReminders={setReminders} />
+        <BottomNavbar
+          reminders={reminders}
+          setReminders={setReminders}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+        />
       </div>
     </>
   );
