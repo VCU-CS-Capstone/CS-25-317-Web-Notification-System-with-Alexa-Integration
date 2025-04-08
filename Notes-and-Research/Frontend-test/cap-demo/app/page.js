@@ -3,6 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { ReminderCard } from "./components/ReminderCard";
 import BottomNavbar from "./components/BottomNavbar";
+import { Popup } from "./components/Popup";
+import dynamic from "next/dynamic";
+
+// Dynamically import NotificationSetup with explicit default export
+const NotificationSetup = dynamic(
+  () => import("./components/NotificationSetup").then((mod) => mod.default),
+  { ssr: false }
+);
 
 const apiUrl = "http://localhost:5001/users/events?userid=1";
 
@@ -11,6 +19,50 @@ const Home = () => {
   const [selectedReminder, setSelectedReminder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Register the service worker (for notifications)
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/firebase-messaging-sw.js")
+        .then((registration) => {
+          console.log("Service Worker registered:", registration);
+        })
+        .catch((err) => {
+          console.error("Service Worker registration failed:", err);
+        });
+    }
+  }, []);
+
+  const handleCardClick = (reminder) => {
+    setSelectedReminder(reminder);
+  };
+
+  const closePopup = () => {
+    setSelectedReminder(null);
+  };
+
+  const handleDelete = async () => {
+    const deleteUrl = `http://localhost:5001/users/events/${selectedReminder.id}`;
+    try {
+      const response = await fetch(deleteUrl, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("API Response Status:", response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+      const result = await response.json();
+      console.log("API Response Data:", result);
+      closePopup();
+    } catch (error) {
+      console.error("Error deleting reminder:", error.message);
+    }
+  };
 
   useEffect(() => {
     const fetchReminders = async () => {
@@ -27,7 +79,6 @@ const Home = () => {
           title: event.event_name,
           time: event.start_time,
           date: event.event_date,
-          description: `Interval: ${event.interval} minutes`,
         }));
         setReminders(formattedData);
       } catch (err) {
@@ -37,70 +88,62 @@ const Home = () => {
       }
     };
     fetchReminders();
-  }, []);
+  }, [handleDelete]);
 
-  const handleCardClick = (reminder) => {
-    setSelectedReminder(reminder);
-  };
-
-  const closePopup = () => {
-    setSelectedReminder(null);
-  };
+  function tConvert(time) {
+    // Convert 24-hour time to 12-hour format with AM/PM
+    time = time
+      .toString()
+      .match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+    if (time.length > 1) {
+      time = time.slice(1);
+      time[5] = +time[0] < 12 ? "AM" : "PM";
+      time[0] = +time[0] % 12 || 12;
+    }
+    return time.join("");
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-800">
-      <div className="flex-grow p-4">
-        <h2 className="text-xl font-bold mb-4 text-center text-white">
-          Reminders
-        </h2>
-        {loading && (
-          <p className="text-center text-white">Loading reminders...</p>
-        )}
-        {error && <p className="text-center text-red-500">Error: {error}</p>}
-        <div className="grid place-items-center grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {reminders.map((reminder) => (
-            <ReminderCard
-              key={reminder.id}
-              description={reminder.description}
-              title={reminder.title}
-              time={reminder.time}
-              date={reminder.date}
-              onClick={() => handleCardClick(reminder)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {selectedReminder && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-slate-800 p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-xl font-bold mb-2 text-white">
-              {selectedReminder.title}
-            </h3>
-            <p className="mb-4 text-white">{selectedReminder.description}</p>
-            <div className="flex justify-end space-x-4">
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-                onClick={closePopup}
-              >
-                Close
-              </button>
-              <button className="bg-green-500 text-white px-4 py-2 rounded">
-                Option 1
-              </button>
-              <button className="bg-yellow-500 text-white px-4 py-2 rounded">
-                Option 2
-              </button>
-              <button className="bg-red-500 text-white px-4 py-2 rounded">
-                Option 3
-              </button>
-            </div>
+    <>
+      {/* NotificationSetup will handle Firebase notifications */}
+      <NotificationSetup
+        userId={1}
+        handleDelete={handleDelete}
+        selectedReminder={selectedReminder}
+      />
+      <div className="min-h-screen flex flex-col bg-white">
+        <div className="flex-grow p-4">
+          <h2 className="text-xl font-bold mb-4 text-center text-gray-800">
+            Reminders
+          </h2>
+          {loading && (
+            <p className="text-center text-gray-800">Loading reminders...</p>
+          )}
+          {error && <p className="text-center text-red-500">Error: {error}</p>}
+          <div className="grid place-items-center grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            {reminders.map((reminder) => (
+              <ReminderCard
+                key={reminder.id}
+                title={reminder.title}
+                time={tConvert(reminder.time)}
+                date={reminder.date}
+                onClick={() => handleCardClick(reminder)}
+              />
+            ))}
           </div>
         </div>
-      )}
 
-      <BottomNavbar reminders={reminders} setReminders={setReminders} />
-    </div>
+        {selectedReminder && (
+          <Popup
+            selectedReminder={selectedReminder}
+            closePopup={closePopup}
+            handleDelete={handleDelete}
+          />
+        )}
+
+        <BottomNavbar reminders={reminders} setReminders={setReminders} />
+      </div>
+    </>
   );
 };
 
