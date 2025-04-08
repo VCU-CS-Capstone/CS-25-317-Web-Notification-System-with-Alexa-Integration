@@ -1,4 +1,4 @@
-//Intial Imports
+// Initial Imports
 import admin from "firebase-admin";
 import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
@@ -10,7 +10,12 @@ import cors from "cors";
 dotenv.config();
 
 // Initialize Firebase Admin SDK
-const serviceAccount = JSON.parse(fs.readFileSync("./cs-25-317-firebase-adminsdk-fbsvc-2c27dbbff6.json", "utf-8"));
+const serviceAccount = JSON.parse(
+  fs.readFileSync(
+    "./cs-25-317-firebase-adminsdk-fbsvc-2c27dbbff6.json",
+    "utf-8"
+  )
+);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -26,32 +31,48 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:3001", "http://127.0.0.1:5500"], // Frontend URLs
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5001",
+    "http://localhost:5173",
+    "http://localhost:3001",
+    "http://127.0.0.1:5500",
+  ],
   methods: "GET,POST,PUT,DELETE,OPTIONS",
   allowedHeaders: "Content-Type, Authorization",
 };
 
-//Middleware to enable CORS and Express
-app.use(cors(corsOptions)); // Allow requests from the specified origin
-app.options("*", cors(corsOptions)); // Enable preflight for all routes
+// Middleware to enable CORS and JSON parsing
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
+
+// Global logs array and helper function
+const logs = [];
+function addLog(message) {
+  console.log(message);
+  logs.push(message);
+}
 
 // Function to save FCM token to Supabase
 async function saveTokenToDatabase(token, userId) {
   const { data, error } = await supabase
     .from("user_devices")
-    .upsert({ device_token: token, user_id: userId }, { onConflict: ["user_id"] });
+    .upsert(
+      { device_token: token, user_id: userId },
+      { onConflict: ["user_id"] }
+    );
 
   if (error) {
     console.error("Error saving token:", error);
   } else {
-    console.log("FCM token saved successfully:", data);
+    addLog("FCM token saved successfully: " + JSON.stringify(data));
   }
 }
 
 // Endpoint to save FCM token from frontend
 app.post("/save-token", async (req, res) => {
-  console.log('Received request:', req.body);  // Debugging the request body
+  addLog("Received request: " + JSON.stringify(req.body));
   try {
     const { token, userId } = req.body;
     if (!token || !userId) {
@@ -125,15 +146,42 @@ async function sendReminderNotifications() {
     const formattedTime = currentTime.toTimeString().split(" ")[0]; // HH:MM:SS
     
     const timeRangeInMinutes = 1;
-    const pastTime = new Date(currentTime.getTime() - timeRangeInMinutes * 60000);
-    const futureTime = new Date(currentTime.getTime() + timeRangeInMinutes * 60000);
-    
-    const formattedPastTime = pastTime.toTimeString().split(" ")[0];
-    const formattedFutureTime = futureTime.toTimeString().split(" ")[0];
-    
-    console.log(`Checking events for date: ${formattedDate}, time range: ${formattedPastTime} to ${formattedFutureTime}`);    
 
-    const userId = 1; // User ID you want to filter by
+    // Format current date and time in EST using locale options
+    const optionsDate = {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    };
+    const optionsTime = {
+      timeZone,
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    };
+
+    const formattedDate = currentTime.toLocaleDateString("en-CA", optionsDate);
+    const formattedTime = currentTime.toLocaleTimeString("en-GB", optionsTime);
+
+    const pastTime = new Date(
+      currentTime.getTime() - timeRangeInMinutes * 60000
+    );
+    const futureTime = new Date(
+      currentTime.getTime() + timeRangeInMinutes * 60000
+    );
+    const formattedPastTime = pastTime.toLocaleTimeString("en-GB", optionsTime);
+    const formattedFutureTime = futureTime.toLocaleTimeString(
+      "en-GB",
+      optionsTime
+    );
+
+    addLog(
+      `Checking events for date: ${formattedDate}, time range: ${formattedPastTime} to ${formattedFutureTime}`
+    );
+
+    const userId = 1; // Example user ID
 
     // Fetch events from database
     const { data: events, error: eventError } = await supabase.rpc(
@@ -147,7 +195,7 @@ async function sendReminderNotifications() {
     );
 
     if (eventError) {
-      console.error("Error fetching events:", eventError);
+      addLog("Error fetching events: " + JSON.stringify(eventError));
       return;
     }
 
@@ -157,6 +205,7 @@ async function sendReminderNotifications() {
     }
 
 
+    // Process each event to send notifications
     for (const event of events) {
       //Add event time and adjusted for reccurent notifications
       const eventTime = new Date(`${event.event_date}T${event.start_time}`);
@@ -190,15 +239,15 @@ async function sendReminderNotifications() {
     }
     
   } catch (error) {
-    console.error("Error in sendReminderNotifications:", error);
+    addLog("Error in sendReminderNotifications: " + error);
   }
 }
 
-// Run function every minute to check reminders
-setInterval(sendReminderNotifications, 60000);  // 60,000 ms = 1 minute
+// Run the notification check every minute
+setInterval(sendReminderNotifications, 60000);
 
 // Start Express server
-const PORT = 3000;
+const PORT = 3002;
 app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
+  addLog(`Backend running on http://localhost:${PORT}`);
 });
