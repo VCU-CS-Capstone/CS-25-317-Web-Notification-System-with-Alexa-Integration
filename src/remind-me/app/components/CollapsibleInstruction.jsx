@@ -24,4 +24,16 @@ const CollapsibleInstruction = ({ title, children }) => {
   );
 };
 
+// Might add for Website shortcut since there is a difference between Windows users and macbook users (a smaller drop down within the dropdown)
+
+//const CollapsibleMiniInstruction = ({ title, children }) => { 
+  //const [isOpen, setIsOpen] = useState(false);
+
+  //const toggle = () => setIsOpen(!isOpen);
+
+  //return (
+    //<div className="mb"
+  //)
+//}
+
 export default CollapsibleInstruction;

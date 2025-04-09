@@ -174,58 +174,63 @@ const page = () => {
         </div>
       </CollapsibleInstruction>
 
-      <CollapsibleInstruction title="Connecting Alexa Mobile App">
+      <CollapsibleInstruction title="Creating Desktop Shortcut for Website">
+        <div>
+          <h3 className="text-2x1 font-semibold">Add Website to Desktop</h3>
+          <p>These are the instructions for Windows Users.</p>
+          <br></br>
+          <o1 className="list-decimal ml-6">
+            <li>Right click on home screen once you've opened up your laptop.</li>
+            <li>Select or hover over the "New" option from the drop down menu.</li>
+            <li>Select the "Shortcut" option from the drop down menu.</li>
+              <li>A pop up should then ask: "What item would you like to create a shortcut for?"</li>
+            <li>Next, you will paste the website URL from browser into "Type the location of the item:" bar.</li>
+            <li>Once the website URL is seen there, click the "Next" button</li>
+            <li>After that, it will ask: "What would you like to name the shortcut?"</li>
+              <li>Here, you can name it "RemindMe", "RemindMe Website", or whatever works for you to know what the shortcut goes to.</li>
+            <li>Now you will click the "Finish" button.</li>
+            <li>Everything is now set up! Be aware that it will have the name of the website with the image to click being your default browser.</li>
+          </o1>
+
+          <p>
+            <br></br>
+            You're website should now be easily accessible to open from the desktop without having to enter the website everytime you wish to use it.
+          </p>
+        </div>
+      </CollapsibleInstruction>
+
+      <CollapsibleInstruction title="Alexa Mobile App">
       <div>
-          <h3 className="text-2xl font-semibold">Fitbit Setup Overview</h3>
+          <h3 className="text-2xl font-semibold">iPhone Instructions</h3>
           <p>
             First, download the Alexa mobile app and create an account. Since our project uses a Google account, we’ll be signing in with that. You’ll need access to the <strong>cscapstoneqlplus25@gmail.com</strong> credentials to proceed.
           </p>
           <br></br>
           <h3 className="text-2xl font-semibold">Getting Started</h3>
-          <br></br>
           <ol className="list-decimal ml-6">
-            <li>
-              Download the Amazon Alexa app (Apple Store)
+            <li>Log-in with account credentials</li>
+            <li>Click on the name ‘User’.
             </li>
-            <li>
-              Log-in with account credentials. Currently, this will need to be cscapstoneqlplus25@gmail.com. 
+            <li>Click ‘Skip’.
             </li>
-            <li>
-              Click on the name ‘User’.
+            <li>If you would like to set up Voice ID you can follow the app instructions here, otherwise click ‘Remind Me Later’.            </li>
+            <li>Click ‘Set Up My Features’.
             </li>
-            <li>
-            Click ‘Skip’
-            </li>
-            <li>
-              If you would like to set up Voice ID you can follow the app instructions here, otherwise click ‘Remind Me Later’.
-            </li>
-            <li>
-              Click ‘Set Up My Features’
-            </li>
-            <li>
-              Until this application has been officially deployed, click ‘Cancel’ → ‘Skip’ → ‘Cancel’ 
-            </li>
-            <li>
-              Click ‘That’s Everyone’ then ‘Done’ to finish setting up the account
-            </li>
+            <li>Until this application has been officially deployed, click ‘Cancel’ → ‘Skip’ → ‘Cancel’.</li>
+            <li>Click ‘That’s Everyone’ then ‘Done’ to finish setting up the account.</li>
           </ol>
-
           <br></br>
           <h3 className="text-2xl font-semibold">App Settings</h3>
           <ol>
             <li>
-              When you open the app, you’ll see the dashboard. At the bottom of the screen, click on the icon with three lines
+              When you open the app, you’ll see this dashboard. At the bottom of the screen, click on the icon with three lines.
             </li>
             <li>
-              Look for the gear icon and click ‘Settings’
+              Then look for the gear icon and click ‘Settings’<div className=""></div>
             </li>
           </ol>
           <br></br>
           <h3 className="text-2xl font-semibold">Hands-Free</h3>
-          <p>
-            Turning Hands-Free on allows you to say ‘Hey, Alexa’ to start a conversation when you’re in the app
-          </p>
-          <br></br>
           <ol>
             <li>
               Go to the settings page (instructions for Settings are described in the previous section) 
@@ -237,12 +242,7 @@ const page = () => {
               Toggle the button to Enable Alexa Hands-free (Should turn colored)
             </li>
           </ol>
-         
         </div>
-      </CollapsibleInstruction>
-
-      <CollapsibleInstruction title="Using the Website">
-        <p>Insert Instructions Here</p>
       </CollapsibleInstruction>
     </div>
   );
