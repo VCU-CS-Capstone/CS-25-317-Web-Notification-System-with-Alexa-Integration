@@ -12,7 +12,7 @@ const page = () => {
           <p>
             Alexa is set up so that if she hears a phrase that doesn't exactly match what she expects, she will try to infer the best option.
           </p>
-
+          <br></br>
           <h3 className="text-2xl font-semibold">Starting a Session</h3>
           <p>
             Open our application with “Alexa, open Remind Me”. After the application is open, you have the following application options:
@@ -23,7 +23,7 @@ const page = () => {
             <li>“Remove a reminder”</li>
             <li>“List my reminders”</li>
           </ul>
-
+          <br></br>
           <h3 className="text-2xl font-semibold">Creating a Reminder</h3>
           <p>
             You can create a reminder by saying phrases like:
@@ -55,7 +55,7 @@ const page = () => {
 
             Alexa will respond that the reminder was created and then you will be prompted for what you would like to do next. This could be one of the application choices or “quit” to end the Remind Me session.
           </p>
-
+          <br></br>
           <h3 className="text-2xl font-semibold">Creating an Event</h3>
           <p>
             An event is similar to a reminder, but it includes an end time.
@@ -95,6 +95,7 @@ const page = () => {
           <p>
             Alexa will respond that the event was created and then you will be prompted for what you would like to do next. This could be one of the application choices or “quit” to end the Remind Me session. 
           </p>
+          <br></br>
           <h3 className="text-2xl font-semibold">Removing an Event/Reminder</h3>
           <p>
             To remove a reminder or event, you can say:
@@ -122,6 +123,7 @@ const page = () => {
           <p>
             Alexa will respond that the reminder/event was removed and then you will be prompted for what you would like to do next. This could be one of the application choices or “quit” to end the Remind Me session. 
           </p>
+          <br></br>
           <h3 className="text-2xl font-semibold">Listing Daily Reminders</h3>
           <p>
             To list the current day’s reminders, you can say:
@@ -130,7 +132,7 @@ const page = () => {
             <li>“List reminders”</li>
             <li>“List my reminders”</li>
           </ul>
-
+          <br></br>
           <h3 className="text-2xl font-semibold">Ending a Session / Canceling a Request</h3>
           <p>
             The phrase “quit” will end the session in Remind Me. At any point during the session, ‘stop’ will cancel the current request, but not end the session.
@@ -141,7 +143,38 @@ const page = () => {
         </div>
       </CollapsibleInstruction>
       
-      <CollapsibleInstruction title="Desktop Shortcut">
+      <CollapsibleInstruction title="Setting up Fitbit Watch">
+        <div>
+          <h3 className="text-2xl font-semibold">Fitbit Setup Overview</h3>
+          <p>
+            First, download the Fitbit mobile app and create an account. Since our project uses a Google account, we’ll be signing in with that. You’ll need access to the <strong>cscapstoneqlplus25@gmail.com</strong> credentials to proceed.
+          </p>
+          <br></br>
+          <h3 className="text-2xl font-semibold">Getting Started</h3>
+          <p>Follow these steps to connect and configure the Fitbit Versa 4:<br></br></p>
+          <ol className="list-decimal ml-6">
+            <li>Plug in the watch to begin setup.</li>
+            <li>Once the Fitbit watch powers on, select your language.</li>
+            <li>When prompted on the watch, switch over to the Fitbit app on the iPhone.</li>
+            <li>Tap the device icon in the top left corner of the app.</li>
+            <li>Select “Add Device” to begin pairing your watch.</li>
+            <li>From the list, choose “Versa 4” (the device used for the 2024–25 Capstone Project).</li>
+            <li>Tap “Start Setup” on the next screen.</li>
+            <li>Agree to the Fitbit terms (you may need to scroll to click “I agree”).</li>
+            <li>Tap “Continue” when prompted.</li>
+            <li>Enter the 4-digit code shown on the watch when asked.</li>
+            <li>Allow any pop-up permissions by tapping “Pair” and “Allow.”</li>
+            <li>If prompted, tap “Update” to install the latest Fitbit software.</li>
+          </ol>
+
+          <p>
+            <br></br>
+            Once the watch is updated and fully set up, you’ll be ready to begin using the device in conjunction with the Capstone Project tools, including Alexa Skills and Google integrations.
+          </p>
+        </div>
+      </CollapsibleInstruction>
+
+      <CollapsibleInstruction title="Using the Website">
         <p>Insert Instructions Here</p>
       </CollapsibleInstruction>
 

@@ -16,13 +16,13 @@
     <script>
         // 🔹 Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyA1lMW1D2wtXDHsuFJKvuerRbRjK39y0YM",
-            authDomain: "cs-25-317.firebaseapp.com",
-            projectId: "cs-25-317",
-            storageBucket: "cs-25-317.firebasestorage.app",
-            messagingSenderId: "920068607900",
-            appId: "1:920068607900:web:e02406c989697efeec0259",
-            vapidKey: "BAloxObNIPRr9QujTLBgmGOQn_kVDcPlm9VXPXYOkJm3WVJLVcb2_SDJLMnw-JF3nYpdOwPtK2NO1hN0QrR30X8"
+                apiKey: "AIzaSyA1lMW1D2wtXDHsuFJKvuerRbRjK39y0YM",
+                authDomain: "cs-25-317.firebaseapp.com",
+                projectId: "cs-25-317",
+                storageBucket: "cs-25-317.firebasestorage.app",
+                messagingSenderId: "920068607900",
+                appId: "1:920068607900:web:e02406c989697efeec0259",
+                vapidKey: "BAloxObNIPRr9QujTLBgmGOQn_kVDcPlm9VXPXYOkJm3WVJLVcb2_SDJLMnw-JF3nYpdOwPtK2NO1hN0QrR30X8"
         };
 
         // 🔹 Initialize Firebase
@@ -80,7 +80,7 @@
         // 🔹 Send Token to Backend
         function sendTokenToBackend(token) {
             const userId = 1; // Replace with actual user ID from your app
-            fetch("http://localhost:3000/save-token", {
+            fetch("http://localhost:3002/save-token", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token, userId }),

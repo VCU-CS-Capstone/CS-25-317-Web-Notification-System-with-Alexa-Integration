@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ReminderPopup from "./ReminderPopup"; 
 import { supabase } from "../lib/supabaseClient";
 
-const BottomNavbar = () => {
+const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const sessionId = 1; // Temporary session ID
@@ -46,11 +46,26 @@ const BottomNavbar = () => {
     setLoading(false);
   };
 
+  const handleNextDay = () => {
+    const next = new Date(selectedDate);
+    next.setDate(next.getDate() + 1);
+    setSelectedDate(next);
+  };
+  
+  const handlePrevDay = () => {
+    const prev = new Date(selectedDate);
+    prev.setDate(prev.getDate() - 1);
+    setSelectedDate(prev);
+  };
+  
+
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-[#73FF00]  shadow-lg text-black">
         <div className="flex justify-around items-center p-3">
-          <button className="btn btn-outline btn-sm hover:bg-slate-700 text-black">
+          <button className="btn btn-outline btn-sm hover:bg-slate-700 text-black"
+            onClick={handlePrevDay}
+          >
             Prev
           </button>
           <button
@@ -59,7 +74,9 @@ const BottomNavbar = () => {
           >
             Create
           </button>
-          <button className="btn btn-outline btn-sm hover:bg-slate-700 text-black">
+          <button className="btn btn-outline btn-sm hover:bg-slate-700 text-black"
+            onClick={handleNextDay}
+          >
             Next
           </button>
         </div>

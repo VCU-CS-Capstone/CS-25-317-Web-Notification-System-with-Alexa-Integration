@@ -6,7 +6,7 @@ import BottomNavbar from "../components/BottomNavbar";
 import { Popup } from "../components/Popup";
 import { supabase } from "../lib/supabaseClient"; // Import Supabase client
 import dynamic from "next/dynamic";
-import { getFirebaseMessaging, getToken } from "../lib/firebase"; 
+import { getFirebaseMessaging, getToken, onMessage} from "../lib/firebase"; 
 
 // Dynamically import NotificationSetup with explicit default export
 const NotificationSetup = dynamic(
@@ -21,6 +21,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [notificationPermission, setNotificationPermission] = useState(false);
 
+<<<<<<< HEAD
   useEffect(() => {
     // Request notification permission on page load
     async function requestNotificationPermission() {
@@ -34,9 +35,43 @@ const Dashboard = () => {
         console.error("Notification permission denied");
       }
     }
+=======
+>>>>>>> 5813152f8af9d717e34e2a37853657ecb2480b44
 
-    // Call the permission request function
-    requestNotificationPermission();
+  useEffect(() => {
+    const setupMessaging = async () => {
+      try {
+        const messaging = await getFirebaseMessaging();
+        if (!messaging) {
+          console.error('Firebase messaging is not supported in this environment');
+          return;
+        }
+
+        // Request permission
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          console.warn('Notification permission not granted');
+          return;
+        }
+
+        // Get FCM token
+        const token = await getToken(messaging, {
+          vapidKey: 'BAloxObNIPRr9QujTLBgmGOQn_kVDcPlm9VXPXYOkJm3WVJLVcb2_SDJLMnw-JF3nYpdOwPtK2NO1hN0QrR30X8',
+        });
+        console.log('FCM Token:', token);
+
+        // Handle foreground messages
+        onMessage(messaging, (payload) => {
+          console.log('Foreground message received:', payload);
+          const { title, body } = payload.notification;
+          new Notification(title, { body });
+        });
+      } catch (err) {
+        console.error('Error setting up messaging:', err);
+      }
+    };
+
+    setupMessaging();
   }, []);
 
   // Function to retrieve the token from Firebase
@@ -86,23 +121,36 @@ const Dashboard = () => {
   };
 
   // Use Supabase to fetch reminders
-  const fetchReminders = async () => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const fetchReminders = async (date = new Date()) => {
     setLoading(true);
     setError(null);
     try {
+<<<<<<< HEAD
       //added by Parker to try getting specific user Data
       //const {data: {user}, error: userError} = await supabase.auth.getUser();
 
       //if (userError || !user ) throw new Error("user not signed in");
       //end code added by Parker
 
+=======
+      const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD
+>>>>>>> 5813152f8af9d717e34e2a37853657ecb2480b44
       const { data, error } = await supabase
-        .from("events") 
+        .from("events")
         .select("*")
+<<<<<<< HEAD
         .eq("userid", 1); // Filter by user ID - changed by Parker from 1 to userid
 
+=======
+        .eq("userid", 1)
+        .eq("event_date", formattedDate) // Filter by selected date
+        .order("start_time", {ascending:true});
+  
+>>>>>>> 5813152f8af9d717e34e2a37853657ecb2480b44
       if (error) throw error;
-
+  
       const formattedData = data.map((event) => ({
         id: event.id,
         title: event.event_name,
@@ -116,6 +164,8 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+  
+
 
   // Use Supabase to delete reminders
   const handleDelete = async () => {
@@ -137,8 +187,9 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchReminders();
-  }, []);
+    fetchReminders(selectedDate);
+  }, [selectedDate]);
+  
 
   function tConvert(time) {
     // Convert 24-hour time to 12-hour format with AM/PM
@@ -191,10 +242,16 @@ const Dashboard = () => {
           />
         )}
 
-        <BottomNavbar reminders={reminders} setReminders={setReminders} />
+        <BottomNavbar
+          reminders={reminders}
+          setReminders={setReminders}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+        />
       </div>
     </>
   );
 };
 
 export default Dashboard;
+
