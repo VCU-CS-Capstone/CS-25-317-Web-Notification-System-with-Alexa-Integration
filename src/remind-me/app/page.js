@@ -26,6 +26,11 @@ export default function HomePage() {
       setErrorMsg("Invalid username or password");
       return;
     }
+
+    //Added by Parker for User Token
+    //const token = jwt.sign({userId: users.id}, "your_secret_key", {expiresIn: "1h"});
+
+    //console.log("JWT Token", token);
   
     // Proceed to dashboard after successful login
     router.push("/dashboard");

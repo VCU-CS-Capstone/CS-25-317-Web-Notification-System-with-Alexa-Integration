@@ -28,7 +28,7 @@ const Dashboard = () => {
       if (permission === "granted") {
         // Get the token from Firebase and save it to your backend
         const token = await getTokenFromFirebase();
-        const userId = 1; // Replace with the actual user ID
+        const userId = 1; // Replace with the actual user ID - changed by Parker from 1 to userid
         await saveTokenToBackend(token, userId);
       } else {
         console.error("Notification permission denied");
@@ -90,10 +90,16 @@ const Dashboard = () => {
     setLoading(true);
     setError(null);
     try {
+      //added by Parker to try getting specific user Data
+      //const {data: {user}, error: userError} = await supabase.auth.getUser();
+
+      //if (userError || !user ) throw new Error("user not signed in");
+      //end code added by Parker
+
       const { data, error } = await supabase
         .from("events") 
         .select("*")
-        .eq("userid", 1); // Filter by user ID
+        .eq("userid", 1); // Filter by user ID - changed by Parker from 1 to userid
 
       if (error) throw error;
 
