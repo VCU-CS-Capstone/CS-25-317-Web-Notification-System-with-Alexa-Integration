@@ -2,13 +2,24 @@ import React from "react";
 
 export const ReminderCard = ({ title, description, time, date, onClick }) => (
   <div
-    className="w-60 h-60 p-6 shadow-lg rounded-2xl flex flex-col justify-between cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out btn btn-primary text-white ml-4 nr-4 mb-4" // Added mb-4 for bottom margin
     onClick={onClick}
+    className="
+      bg-primary text-white p-4 shadow-lg rounded-2xl cursor-pointer 
+      hover:scale-105 transition-transform duration-300 ease-in-out 
+      flex flex-row items-center justify-between
+      sm:flex-col sm:items-start sm:justify-between 
+      w-full sm:w-60 sm:h-60 
+      mb-4 ml-4 mr-4
+    "
   >
-    <h2 className="text-2xl font-semibold mb-2">{title}</h2>
-    <p className="text-medium mb-4">{description}</p>
-    <div className="mt-auto">
-      <p className="text-lg font-medium">
+    <div className="flex-1 sm:w-full">
+      <h2 className="text-xl font-semibold">{title}</h2>
+      <p className="hidden sm:block text-base mt-1">{description}</p>
+    </div>
+
+    {/* Right section: Date and Time */}
+    <div className="text-right text-base sm:text-left mt-0 sm:mt-auto sm:pt-4">
+      <p className="text-base sm:text-lg font-medium whitespace-nowrap">
         {date} at {time}
       </p>
     </div>
