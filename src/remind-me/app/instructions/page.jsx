@@ -6,7 +6,7 @@ const page = () => {
     <div className="p-6 space-y-4">
       <h1 className="text-3xl font-bold text-center mb-6">Instructions</h1>
       
-      <CollapsibleInstruction title="Using the Remind Me Application">
+      <CollapsibleInstruction title="Using Alexa">
         <div>
           <h3 className="text-2xl font-semibold">Alexa Setup</h3>
           <p>
@@ -174,8 +174,71 @@ const page = () => {
         </div>
       </CollapsibleInstruction>
 
-      <CollapsibleInstruction title="Using the Website">
-        <p>Insert Instructions Here</p>
+      <CollapsibleInstruction title="Connecting Alexa Mobile App">
+      <div>
+          <h3 className="text-2xl font-semibold">Fitbit Setup Overview</h3>
+          <p>
+            First, download the Alexa mobile app and create an account. Since our project uses a Google account, we’ll be signing in with that. You’ll need access to the <strong>cscapstoneqlplus25@gmail.com</strong> credentials to proceed.
+          </p>
+          <br></br>
+          <h3 className="text-2xl font-semibold">Getting Started</h3>
+          <br></br>
+          <ol className="list-decimal ml-6">
+            <li>
+              Download the Amazon Alexa app (Apple Store)
+            </li>
+            <li>
+              Log-in with account credentials. Currently, this will need to be cscapstoneqlplus25@gmail.com. 
+            </li>
+            <li>
+              Click on the name ‘User’.
+            </li>
+            <li>
+            Click ‘Skip’
+            </li>
+            <li>
+              If you would like to set up Voice ID you can follow the app instructions here, otherwise click ‘Remind Me Later’.
+            </li>
+            <li>
+              Click ‘Set Up My Features’
+            </li>
+            <li>
+              Until this application has been officially deployed, click ‘Cancel’ → ‘Skip’ → ‘Cancel’ 
+            </li>
+            <li>
+              Click ‘That’s Everyone’ then ‘Done’ to finish setting up the account
+            </li>
+          </ol>
+
+          <br></br>
+          <h3 className="text-2xl font-semibold">App Settings</h3>
+          <ol>
+            <li>
+              When you open the app, you’ll see the dashboard. At the bottom of the screen, click on the icon with three lines
+            </li>
+            <li>
+              Look for the gear icon and click ‘Settings’
+            </li>
+          </ol>
+          <br></br>
+          <h3 className="text-2xl font-semibold">Hands-Free</h3>
+          <p>
+            Turning Hands-Free on allows you to say ‘Hey, Alexa’ to start a conversation when you’re in the app
+          </p>
+          <br></br>
+          <ol>
+            <li>
+              Go to the settings page (instructions for Settings are described in the previous section) 
+            </li>
+            <li>
+              Click on ‘Alexa App Settings’
+            </li>
+            <li>
+              Toggle the button to Enable Alexa Hands-free (Should turn colored)
+            </li>
+          </ol>
+         
+        </div>
       </CollapsibleInstruction>
 
       <CollapsibleInstruction title="Using the Website">

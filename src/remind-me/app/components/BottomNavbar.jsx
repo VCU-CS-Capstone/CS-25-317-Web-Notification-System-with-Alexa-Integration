@@ -1,12 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReminderPopup from "./ReminderPopup"; 
 import { supabase } from "../lib/supabaseClient";
 
 const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const sessionId = 1; // Temporary session ID
+  const [userId, setUserId] = useState(null);
 
+
+  useEffect(() => {
+    // Ensure we are on the client side before accessing localStorage
+    if (typeof window !== "undefined") {
+      const userId = localStorage.getItem('userId');
+     
+      if (userId) {
+        setUserId(userId);
+        console.log('userId:', userId)
+      }
+    }
+  }, []);
 
   const handleCreateClick = () => {
     setIsFormOpen(true);
@@ -26,7 +38,7 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate })
       start_time: event.target.time.value,
       end_time: null, // Assuming no end time is provided
       interval: 30,
-      userid: sessionId, 
+      userid: 1, 
     };
 
     try {

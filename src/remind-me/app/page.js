@@ -26,6 +26,7 @@ export default function HomePage() {
       setErrorMsg("Invalid username or password");
       return;
     }
+    localStorage.setItem('username', username);
 
     //Added by Parker for User Token
     //const token = jwt.sign({userId: users.id}, "your_secret_key", {expiresIn: "1h"});
@@ -35,6 +36,7 @@ export default function HomePage() {
     // Proceed to dashboard after successful login
     router.push("/dashboard");
   };
+  
   
 
   const handleSignUp = async () => {
