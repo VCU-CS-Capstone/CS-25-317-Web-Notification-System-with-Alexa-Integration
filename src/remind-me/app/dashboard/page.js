@@ -21,22 +21,6 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [notificationPermission, setNotificationPermission] = useState(false);
 
-<<<<<<< HEAD
-  useEffect(() => {
-    // Request notification permission on page load
-    async function requestNotificationPermission() {
-      const permission = await Notification.requestPermission();
-      if (permission === "granted") {
-        // Get the token from Firebase and save it to your backend
-        const token = await getTokenFromFirebase();
-        const userId = 1; // Replace with the actual user ID - changed by Parker from 1 to userid
-        await saveTokenToBackend(token, userId);
-      } else {
-        console.error("Notification permission denied");
-      }
-    }
-=======
->>>>>>> 5813152f8af9d717e34e2a37853657ecb2480b44
 
   useEffect(() => {
     const setupMessaging = async () => {
@@ -127,28 +111,14 @@ const Dashboard = () => {
     setLoading(true);
     setError(null);
     try {
-<<<<<<< HEAD
-      //added by Parker to try getting specific user Data
-      //const {data: {user}, error: userError} = await supabase.auth.getUser();
-
-      //if (userError || !user ) throw new Error("user not signed in");
-      //end code added by Parker
-
-=======
       const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD
->>>>>>> 5813152f8af9d717e34e2a37853657ecb2480b44
       const { data, error } = await supabase
         .from("events")
         .select("*")
-<<<<<<< HEAD
-        .eq("userid", 1); // Filter by user ID - changed by Parker from 1 to userid
-
-=======
         .eq("userid", 1)
         .eq("event_date", formattedDate) // Filter by selected date
         .order("start_time", {ascending:true});
   
->>>>>>> 5813152f8af9d717e34e2a37853657ecb2480b44
       if (error) throw error;
   
       const formattedData = data.map((event) => ({
