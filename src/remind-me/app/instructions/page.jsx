@@ -1,4 +1,5 @@
 import React from 'react';
+//import YouTube from 'react-youtube'; // to be used when embedding the vidoes if we publish on the capstone youtube
 import CollapsibleInstruction from '../components/CollapsibleInstruction'; // Adjust the path if necessary
 
 const page = () => {
@@ -177,8 +178,10 @@ const page = () => {
       <CollapsibleInstruction title="Creating Desktop Shortcut for Website">
         <div>
           <h3 className="text-2x1 font-semibold">Add Website to Desktop</h3>
-          <p>These are the instructions for Windows Users.</p>
+          <p>There are different instructions for Windows users and Appl users. Please go to the set of instructions that applies to your computer system.</p>
           <br></br>
+          <h3 className="text-2x1 font-semibold">Shortcut for Windows</h3>
+          <p>These are the instructions for Windows users only:<br></br></p>
           <o1 className="list-decimal ml-6">
             <li>Right click on home screen once you've opened up your laptop.</li>
             <li>Select or hover over the "New" option from the drop down menu.</li>

@@ -46,6 +46,9 @@ const ResponsiveNavbar = () => {
 
           {/* Navbar Links (Visible on Medium Screens and Larger) */}
           <div className="hidden md:flex gap-4 text-lg font-bold">
+            <Link href="/google" className="hover:underline">
+            Google
+            </Link>
             <Link href="/calender" className="hover:underline">
               Calendar
             </Link>
