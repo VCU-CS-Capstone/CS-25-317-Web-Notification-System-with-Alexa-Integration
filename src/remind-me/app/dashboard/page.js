@@ -14,15 +14,17 @@ const NotificationSetup = dynamic(
   { ssr: false }
 );
 
+
 const Dashboard = () => {
   const [reminders, setReminders] = useState([]);
   const [selectedReminder, setSelectedReminder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notificationPermission, setNotificationPermission] = useState(false);
-
+  const [userId, setUserId] = useState(0);
 
   useEffect(() => {
+
     const setupMessaging = async () => {
       try {
         const messaging = await getFirebaseMessaging();
@@ -104,10 +106,38 @@ const Dashboard = () => {
     setSelectedReminder(null);
   };
 
+  // Fetch userId on component mount
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username');
+
+    if (storedUsername && storedUsername !== "null" && storedUsername.trim() !== "") {
+      const fetchUserId = async () => {
+        const { data, error } = await supabase
+          .from("users")
+          .select("id")
+          .eq("username", storedUsername)
+          .single(); // Ensure single user result
+
+        if (error || !data) {
+          setError("User not found or error occurred");
+          console.error("Error:", error);
+        } else {
+          setUserId(data.id);
+        }
+      };
+
+      fetchUserId();
+    } else {
+      setError("No valid username found in localStorage.");
+      console.log("Username is invalid or null");
+    }
+  }, []); 
+
   // Use Supabase to fetch reminders
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const fetchReminders = async (date = new Date()) => {
+    localStorage.setItem('userId', userId);
     setLoading(true);
     setError(null);
     try {
@@ -115,12 +145,12 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .eq("userid", 1)
+        .eq("userid", userId)
         .eq("event_date", formattedDate) // Filter by selected date
-        .order("start_time", {ascending:true});
-  
+        .order("start_time", {ascending: true});
+
       if (error) throw error;
-  
+
       const formattedData = data.map((event) => ({
         id: event.id,
         title: event.event_name,
@@ -134,7 +164,13 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
-  
+
+  // Fetch reminders when userId is set
+  useEffect(() => {
+    if (userId) {
+      fetchReminders(); // Call fetchReminders after setting userId
+    }
+  }, [userId]); // Runs whenever userId changes
 
 
   // Use Supabase to delete reminders
