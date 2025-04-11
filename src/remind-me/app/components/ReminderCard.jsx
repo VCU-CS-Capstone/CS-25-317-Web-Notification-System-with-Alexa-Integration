@@ -1,6 +1,6 @@
 import React from "react";
 
-export const ReminderCard = ({ title, description, time, date, onClick }) => (
+export const ReminderCard = ({ title, description, startTime, date, onClick }) => (
   <div
     onClick={onClick}
     className="
@@ -20,7 +20,7 @@ export const ReminderCard = ({ title, description, time, date, onClick }) => (
     {/* Right section: Date and Time */}
     <div className="text-right text-base sm:text-left mt-0 sm:mt-auto sm:pt-4">
       <p className="text-base sm:text-lg font-medium whitespace-nowrap">
-        {date} at {time}
+        {date} at {startTime}
       </p>
     </div>
   </div>

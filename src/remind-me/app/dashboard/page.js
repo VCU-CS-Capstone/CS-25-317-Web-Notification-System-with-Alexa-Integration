@@ -133,6 +133,20 @@ const Dashboard = () => {
     }
   }, []); 
 
+  function tConvert(time) {
+    // Convert 24-hour time to 12-hour format with AM/PM
+    if (time === null) return null;
+    time = time
+      .toString()
+      .match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+    if (time.length > 1) {
+      time = time.slice(1);
+      time[5] = +time[0] < 12 ? "AM" : "PM";
+      time[0] = +time[0] % 12 || 12;
+    }
+    return time.join("");
+  }
+
   // Use Supabase to fetch reminders
   const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -154,7 +168,9 @@ const Dashboard = () => {
       const formattedData = data.map((event) => ({
         id: event.id,
         title: event.event_name,
-        time: event.start_time,
+        startTime: tConvert(event.start_time),
+        endTime: tConvert(event.end_time),
+        interval: event.interval,
         date: event.event_date,
       }));
       setReminders(formattedData);
@@ -178,7 +194,7 @@ const Dashboard = () => {
     if (!selectedReminder) return;
     try {
       const { error } = await supabase
-        .from("events") // Change to your actual table name
+        .from("events")
         .delete()
         .eq("id", selectedReminder.id);
 
@@ -186,7 +202,7 @@ const Dashboard = () => {
 
       // Refresh reminders after deletion
       closePopup();
-      fetchReminders();
+      fetchReminders(selectedDate);
     } catch (err) {
       console.error("Error deleting reminder:", err.message);
     }
@@ -195,20 +211,6 @@ const Dashboard = () => {
   useEffect(() => {
     fetchReminders(selectedDate);
   }, [selectedDate]);
-  
-
-  function tConvert(time) {
-    // Convert 24-hour time to 12-hour format with AM/PM
-    time = time
-      .toString()
-      .match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
-    if (time.length > 1) {
-      time = time.slice(1);
-      time[5] = +time[0] < 12 ? "AM" : "PM";
-      time[0] = +time[0] % 12 || 12;
-    }
-    return time.join("");
-  }
 
   return (
     <>
@@ -221,7 +223,7 @@ const Dashboard = () => {
       <div className="min-h-screen flex flex-col bg-white">
         <div className="flex-grow p-4">
           <h2 className="text-3xl font-bold mb-4 text-center text-gray-800">
-            Reminders
+            {selectedDate.toLocaleDateString()}
           </h2>
           {loading && (
             <p className="text-center text-gray-800">Loading reminders...</p>
@@ -232,7 +234,7 @@ const Dashboard = () => {
               <ReminderCard
                 key={reminder.id}
                 title={reminder.title}
-                time={tConvert(reminder.time)}
+                startTime={tConvert(reminder.startTime)}
                 date={reminder.date}
                 onClick={() => handleCardClick(reminder)}
               />
@@ -240,7 +242,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {selectedReminder && (
+        {selectedReminder && selectedReminder.startTime &&(
           <Popup
             selectedReminder={selectedReminder}
             closePopup={closePopup}
@@ -253,6 +255,8 @@ const Dashboard = () => {
           setReminders={setReminders}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
+          fetchReminders={fetchReminders}
+          selectedReminder={selectedReminder}
         />
       </div>
     </>

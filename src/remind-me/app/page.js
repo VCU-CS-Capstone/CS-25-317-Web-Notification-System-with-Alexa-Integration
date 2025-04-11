@@ -79,25 +79,26 @@ export default function HomePage() {
         </div>
         <div className="bg-white py-8 px-6 shadow-lg rounded-lg space-y-6">
           <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="off"
-                required
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setErrorMsg("");
-                }}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-
+            {isSignUp && (
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="off"
+                  required={isSignUp}
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrorMsg("");
+                  }}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            )}
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 Username
