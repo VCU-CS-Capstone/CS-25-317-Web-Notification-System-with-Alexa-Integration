@@ -26,7 +26,7 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:3001", "http://127.0.0.1:5500"], // Frontend URLs
+  origin: ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5500"], // Frontend URLs
   methods: "GET,POST,PUT,DELETE,OPTIONS",
   allowedHeaders: "Content-Type, Authorization",
 };
@@ -51,7 +51,7 @@ async function saveTokenToDatabase(token, userId) {
 
 // Endpoint to save FCM token from frontend
 app.post("/save-token", async (req, res) => {
-  console.log('Received request:', req.body);  // Debugging the request body
+  console.log('Received request:', req.body);  
   try {
     const { token, userId } = req.body;
     if (!token || !userId) {
@@ -115,7 +115,7 @@ const eventsMap = new Map();
 async function sendReminderNotifications() {
   try {
     const currentTime = new Date();
-    currentTime.setDate(currentTime.getDate());
+    currentTime.setDate(currentTime.getDate()-1);
     currentTime.setHours(currentTime.getHours()); // Convert UTC to EST
 
     currentTime.setSeconds(0);
@@ -124,16 +124,9 @@ async function sendReminderNotifications() {
     const formattedDate = currentTime.toISOString().split("T")[0]; // YYYY-MM-DD
     const formattedTime = currentTime.toTimeString().split(" ")[0]; // HH:MM:SS
     
-    const timeRangeInMinutes = 1;
-    const pastTime = new Date(currentTime.getTime() - timeRangeInMinutes * 60000);
-    const futureTime = new Date(currentTime.getTime() + timeRangeInMinutes * 60000);
-    
-    const formattedPastTime = pastTime.toTimeString().split(" ")[0];
-    const formattedFutureTime = futureTime.toTimeString().split(" ")[0];
-    
-    console.log(`Checking events for date: ${formattedDate}, time range: ${formattedPastTime} to ${formattedFutureTime}`);    
+    console.log(`Checking events for date: ${formattedDate}, time: ${formattedTime}`);    
 
-    const userId = 1; // User ID you want to filter by
+    const userId = 1; 
 
     // Fetch events from database
     const { data: events, error: eventError } = await supabase.rpc(
@@ -141,8 +134,8 @@ async function sendReminderNotifications() {
       {
         p_user_id: userId,
         p_target_date: formattedDate,
-        p_past_time: formattedPastTime,
-        p_future_time: formattedFutureTime
+        p_past_time: formattedTime,
+        p_future_time: formattedTime
       }
     );
 
@@ -198,7 +191,7 @@ async function sendReminderNotifications() {
 setInterval(sendReminderNotifications, 60000);  // 60,000 ms = 1 minute
 
 // Start Express server
-const PORT = 3000;
+const PORT = 3002;
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
 });
