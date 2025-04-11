@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import ReminderPopup from "./ReminderPopup"; 
 import { supabase } from "../lib/supabaseClient";
 
-const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate }) => {
+
+const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, fetchReminders, selectedReminder, isReminderPopupOpen, openReminderPopup }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState(null);
-
 
   useEffect(() => {
     // Ensure we are on the client side before accessing localStorage
@@ -35,9 +35,9 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate })
     const newReminder = {
       event_name: event.target.title.value,
       event_date: event.target.date.value,
-      start_time: event.target.time.value,
-      end_time: null, // Assuming no end time is provided
-      interval: 30,
+      start_time: event.target.startTime.value,
+      end_time: event.target.endTime.value, // Assuming no end time is provided
+      interval: event.target.interval.value,
       userid: 1, 
     };
 
@@ -52,6 +52,8 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate })
     
       console.log("Reminder added:", data)
       setIsFormOpen(false);
+      fetchReminders();
+
     } catch (error) {
       console.error("Error adding reminder:", error.message);
     }
@@ -75,18 +77,20 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate })
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-[#73FF00]  shadow-lg text-black">
         <div className="flex justify-around items-center p-3">
-          <button className="btn btn-outline border-black hover:bg-slate-700 text-black px-3 py-1 text-lg"
+          <button className="btn btn-outline border-black hover:bg-blue-800 hover:text-white text-black px-3 py-1 text-lg"
             onClick={handlePrevDay}
           >
             Prev
           </button>
           <button
-            className="btn btn-primary px-3 py-1 text-lg"
-            onClick={handleCreateClick}
+            className="btn btn-primary px-3 py-1 text-lg hover:bg-blue-800"
+            onClick={() => {
+              handleCreateClick();
+            }}
           >
             Create
           </button>
-          <button className="btn btn-outline border-black hover:bg-slate-700 text-black px-3 py-1 text-lg"
+          <button className="btn btn-outline border-black hover:bg-blue-800 hover:text-white text-black px-3 py-1 text-lg"
             onClick={handleNextDay}
           >
             Next
@@ -99,6 +103,8 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate })
           closeForm={closeForm}
           loading={loading}
           handleFormSubmit={handleFormSubmit}
+          selectedDate={selectedDate}
+          selectedReminder={selectedReminder}
         />
       )}
     </>
@@ -106,3 +112,6 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate })
 };
 
 export default BottomNavbar;
+
+
+

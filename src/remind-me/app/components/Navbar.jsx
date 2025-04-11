@@ -33,7 +33,7 @@ const ResponsiveNavbar = () => {
         <div className="flex items-center justify-between w-full">
           {/* Drawer Toggle Button (Small Screens) */}
           <button
-            className="btn text-lg btn-primary md:hidden"
+            className="btn text-lg btn-primary md:hidden hover:bg-slate-700"
             onClick={toggleDrawer}
           >
             ☰
@@ -46,16 +46,16 @@ const ResponsiveNavbar = () => {
 
           {/* Navbar Links (Visible on Medium Screens and Larger) */}
           <div className="hidden md:flex gap-4 text-lg font-bold">
-            <Link href="/google" className="hover:underline">
+            <Link href="/google" className="hover:text-blue-600 ">
             Google
             </Link>
-            <Link href="/calender" className="hover:underline">
+            <Link href="/calender" className="hover:text-blue-600 ">
               Calendar
             </Link>
-            <Link href="/instructions" className="hover:underline">
+            <Link href="/instructions" className="hover:text-blue-600 ">
               Help
             </Link>
-            <Link href="/" className="hover:underline">
+            <Link href="/" className="hover:text-blue-600 ">
               Sign Out
             </Link>
           </div>
@@ -74,30 +74,31 @@ const ResponsiveNavbar = () => {
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the drawer
           >
             <button
-              className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-black"
+              className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-black hover:bg-blue-600"
               onClick={closeDrawer}
             >
               ✕
             </button>
             <nav className="mt-8 flex flex-col gap-4">
-              <a
-                href="#calendar"
-                className="text-lg hover:text-blue-600 text-black"
+              <Link
+                href="/calendar"
+                className="text-xl 
+                font-bold hover:text-blue-600 text-black"
               >
                 Calendar
-              </a>
-              <a
-                href="#help"
-                className="text-lg hover:text-blue-600 text-black"
+              </Link>
+              <Link href="/instructions"
+                className="text-xl 
+                font-bold hover:text-blue-600 text-black"
               >
                 Help
-              </a>
-              <a
-                href="#signin"
-                className="text-lg hover:text-blue-600 text-black"
+              </Link>
+              <Link
+                href="/"
+                className="text-xl font-bold hover:text-blue-600 text-black"
               >
-                Sign In
-              </a>
+                Sign Out
+              </Link>
             </nav>
           </div>
         </div>
