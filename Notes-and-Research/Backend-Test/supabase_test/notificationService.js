@@ -115,7 +115,7 @@ const eventsMap = new Map();
 async function sendReminderNotifications() {
   try {
     const currentTime = new Date();
-    currentTime.setDate(currentTime.getDate()-1);
+    currentTime.setDate(currentTime.getDate());
     currentTime.setHours(currentTime.getHours()); // Convert UTC to EST
 
     currentTime.setSeconds(0);
