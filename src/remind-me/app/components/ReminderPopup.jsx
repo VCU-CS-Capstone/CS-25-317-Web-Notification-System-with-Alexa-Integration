@@ -74,12 +74,12 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-blue-600 p-6 rounded-lg shadow-lg w-96">
-        <h3 className="text-xl text-white font-bold mb-4">
+        <h3 className="text-2xl text-white font-bold mb-4">
           {source === "edit" ? "Edit a Reminder" : "Create a Reminder"}
         </h3>
-        <form onSubmit={(e) => handleFormSubmit(e, source, selectedDate, id)}className="space-y-3 text-lg">
+        <form onSubmit={(e) => handleFormSubmit(e, source, selectedDate, id)}className="space-y-2 text-xl" lang="en-GB">
           <div>
-            <label className="block text-sm font-medium text-white">Title</label>
+            <label className="block text-lg font-medium text-white">Title</label>
             <input
               type="text"
               name="title"
@@ -90,7 +90,7 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white">Start Time</label>
+            <label className="block text-lg font-medium text-white">Start Time</label>
             <input
               type="time"
               name="startTime"
@@ -101,7 +101,7 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white">End Time</label>
+            <label className="block text-lg font-medium text-white">End Time</label>
             <input
               type="time"
               name="endTime"
@@ -111,7 +111,7 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white">Date</label>
+            <label className="block text-lg font-medium text-white">Date</label>
             <input
               type="date"
               name="date"
@@ -126,7 +126,7 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white">Interval</label>
+            <label className="block text-lg font-medium text-white">Interval</label>
             <input
               type="number"
               min={5}

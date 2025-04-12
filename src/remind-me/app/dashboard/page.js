@@ -63,6 +63,15 @@ const Dashboard = () => {
     return `${parts[0]}:${parts[1]}`;
   }
 
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0'); // Day with leading zero
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Month with leading zero
+    const year = String(d.getFullYear()).slice(-2); // Get last two digits of the year
+  
+    return `${month}-${day}-${year}`; // Format as MM-DD-YY
+  };
+
   const fetchReminders = async (date = new Date()) => {
     localStorage.setItem('userId', userId);
     setLoading(true);
@@ -134,7 +143,7 @@ const Dashboard = () => {
       <div className="min-h-screen flex flex-col bg-white">
         <div className="flex-grow p-4">
           <h2 className="text-3xl font-bold mb-4 text-center text-gray-800">
-            {selectedDate.toLocaleDateString()}
+            {formatDate(selectedDate.toLocaleDateString())}
           </h2>
           {loading && (
             <p className="text-center text-gray-800">Loading reminders...</p>
