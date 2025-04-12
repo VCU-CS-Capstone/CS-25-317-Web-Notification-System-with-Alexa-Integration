@@ -27,7 +27,7 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload?.notification?.title || "Notification";
   const notificationOptions = {
     body: payload?.notification?.body || "You have a new message.",
-    //icon: Optional: Replace with your logo
+    icon: "/icon.png", // Optional: Replace with your logo
     data: payload?.data || {},
   };
 
