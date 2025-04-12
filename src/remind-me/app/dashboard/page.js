@@ -5,7 +5,11 @@ import { ReminderCard } from "../components/ReminderCard";
 import BottomNavbar from "../components/BottomNavbar";
 import  Popup from "../components/Popup";
 import { supabase } from "../lib/supabaseClient";
-import NotificationSetup from "../components/NotificationSetup"; // Direct import instead of dynamic
+import dynamic from "next/dynamic";
+
+const NotificationSetup = dynamic(() => import("../components/NotificationSetup"), {
+  ssr: false,
+});
 
 const Dashboard = () => {
   const [reminders, setReminders] = useState([]);
