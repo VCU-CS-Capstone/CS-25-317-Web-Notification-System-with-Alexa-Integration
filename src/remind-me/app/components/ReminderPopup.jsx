@@ -3,32 +3,41 @@ import React, { useState, useEffect } from "react";
 const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, source, selectedReminder }) => {
 
   const formatDateForInput = (dateObj) => {
-    const date = new Date(dateObj); 
+    let date;
+    if (typeof dateObj === "string") {
+      const [year, month, day] = dateObj.split("-");
+      date = new Date(year, month - 1, day);
+    } else {
+      date = new Date(dateObj);
+    }
+  
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
-  };  
+  };
+  
 
   // fallback destructuring
-  let { id, title, interval, dateState } = selectedReminder || {};
-  if (source === 'create') {
-    dateState = selectedDate;
-    console.log("date", dateState);
-    interval = 30;
-  }
-  else if (source === 'edit'){
-    dateState = new Date(selectedDate);
-    dateState.setDate(dateState.getDate() + 1);
-  }
+  let { id, title, interval } = selectedReminder || {};
 
   // States
   const [titleState, setTitleState] = useState(title || "");
   const [startTimeState, setStartTimeState] = useState("");
   const [endTimeState, setEndTimeState] = useState("");
-  const [intervalState, setIntervalState] = useState(interval || 30);
+  const [intervalState, setIntervalState] = useState(interval || 60);
   const [userChangedEnd, setUserChangedEnd] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const [dateState, setDateState] = useState(() => {
+    if (source === 'create') return selectedDate;
+    if (source === 'edit') {
+      const [year, month, day] = selectedDate.split("-");
+      const d = new Date(year, month - 1, day);
+      return d;
+    }
+    return new Date();
+  });
 
   // Autofill times on edit
   useEffect(() => {
@@ -107,7 +116,11 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
               type="date"
               name="date"
               value={formatDateForInput(dateState)}
-              onChange={(e) => setDateState(new Date(e.target.value))}
+              onChange={(e) => {
+                const [year, month, day] = e.target.value.split("-");
+                const localDate = new Date(year, month - 1, day); // No timezone shift
+                setDateState(localDate);
+              }}              
               required
               className="w-full border rounded p-2 bg-white text-black"
             />
