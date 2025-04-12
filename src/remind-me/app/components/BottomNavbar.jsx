@@ -3,7 +3,7 @@ import ReminderPopup from "./ReminderPopup";
 import { supabase } from "../lib/supabaseClient";
 
 
-const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, fetchReminders, selectedReminder, isReminderPopupOpen, openReminderPopup }) => {
+const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, fetchReminders, selectedReminder}) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState(null);
@@ -84,9 +84,7 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, f
           </button>
           <button
             className="btn btn-primary px-3 py-1 text-lg hover:bg-blue-800"
-            onClick={() => {
-              handleCreateClick();
-            }}
+            onClick={handleCreateClick}
           >
             Create
           </button>
@@ -100,6 +98,7 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, f
 
       {isFormOpen && (
         <ReminderPopup
+          source="create"
           closeForm={closeForm}
           loading={loading}
           handleFormSubmit={handleFormSubmit}

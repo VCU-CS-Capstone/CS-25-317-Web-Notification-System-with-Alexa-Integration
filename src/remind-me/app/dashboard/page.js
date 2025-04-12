@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ReminderCard } from "../components/ReminderCard";
 import BottomNavbar from "../components/BottomNavbar";
-import { Popup } from "../components/Popup";
+import Popup from "../components/Popup";
 import { supabase } from "../lib/supabaseClient"; // Import Supabase client
 import dynamic from "next/dynamic";
 import { getFirebaseMessaging, getToken, onMessage} from "../lib/firebase"; 
@@ -155,7 +155,7 @@ const Dashboard = () => {
     setLoading(true);
     setError(null);
     try {
-      const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD
+      const formattedDate = date.toLocaleDateString('en-CA'); // YYYY-MM-DD
       const { data, error } = await supabase
         .from("events")
         .select("*")
@@ -208,6 +208,27 @@ const Dashboard = () => {
     }
   };
 
+  // Use Supabase to update reminders
+const handleUpdate = async (updatedReminder) => {
+  if (!updatedReminder || !updatedReminder.id) return;
+  try {
+    const { id, ...fieldsToUpdate } = updatedReminder;
+
+    const { error } = await supabase
+      .from("events")
+      .update(fieldsToUpdate)
+      .eq("id", id);
+
+    if (error) throw error;
+
+    // Refresh reminders after update
+    closePopup();
+    fetchReminders(selectedDate);
+  } catch (err) {
+    console.error("Error updating reminder:", err.message);
+  }
+};
+
   useEffect(() => {
     fetchReminders(selectedDate);
   }, [selectedDate]);
@@ -247,6 +268,7 @@ const Dashboard = () => {
             selectedReminder={selectedReminder}
             closePopup={closePopup}
             handleDelete={handleDelete}
+            fetchReminders={fetchReminders}
           />
         )}
 

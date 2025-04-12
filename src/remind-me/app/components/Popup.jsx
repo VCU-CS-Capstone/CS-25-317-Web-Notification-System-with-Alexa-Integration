@@ -1,5 +1,52 @@
-export const Popup = ({ selectedReminder, closePopup, handleDelete, handleEdit }) => {
+import React, { useState, useEffect } from "react";
+import ReminderPopup from "./ReminderPopup"; 
+import { supabase } from "../lib/supabaseClient";
+
+const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) => {
   const { title, startTime, endTime, interval, date } = selectedReminder;
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleCreateClick = () => {
+    setIsFormOpen(true);
+  };
+  
+  const closeForm = () => {
+    setIsFormOpen(false);
+  };
+  
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+
+    const newReminder = {
+      event_name: event.target.title.value,
+      event_date: event.target.date.value,
+      start_time: event.target.startTime.value,
+      end_time: event.target.endTime.value, // Assuming no end time is provided
+      interval: event.target.interval.value,
+      userid: 1, 
+    };
+
+    try {
+      const {data, error } = await supabase
+      .from("events")
+      .insert([newReminder]);
+
+      if (error){
+        throw new Error(error.message); 
+      }
+    
+      console.log("Reminder added:", data)
+      setIsFormOpen(false);
+      fetchReminders();
+
+    } catch (error) {
+      console.error("Error adding reminder:", error.message);
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 p-4 backdrop-blur-sm">
       <div className="p-6 rounded-2xl shadow-lg max-w-md w-full bg-blue-600 font-semibold">
@@ -7,13 +54,13 @@ export const Popup = ({ selectedReminder, closePopup, handleDelete, handleEdit }
           {title}
         </p>
         <p className="text-base text-white mb-2">
-          <strong>Date:</strong> {date}
+          Date: {date}
         </p>
         <p className="text-base text-white mb-2">
-          <strong>Time:</strong> {startTime} - {endTime}
+          Time: {startTime} - {endTime}
         </p>
         <p className="text-base text-white mb-4">
-          <strong>Notification Time:</strong> {interval} min.
+          Notification Time: {interval} min.
         </p>
         <div className="flex justify-end space-x-3">
           <button
@@ -25,7 +72,7 @@ export const Popup = ({ selectedReminder, closePopup, handleDelete, handleEdit }
 
           <button
             className="px-4 py-2 rounded-md bg-blue-800 text-white font-medium hover:bg-blue-900 transition-colors"
-            //onClick={handleEdit}
+            onClick={handleCreateClick}
           >
             Edit
           </button>
@@ -38,6 +85,20 @@ export const Popup = ({ selectedReminder, closePopup, handleDelete, handleEdit }
           </button>
         </div>
       </div>
+
+
+      {isFormOpen && (
+      <ReminderPopup
+        source="edit"
+        closeForm={closeForm}
+        loading={loading}
+        handleFormSubmit={handleFormSubmit}
+        selectedDate={date}
+        selectedReminder={selectedReminder}
+      />
+    )}
     </div>
   );
 };
+
+export default Popup;
