@@ -1,11 +1,9 @@
 "use client";
 import React, { useEffect } from "react";
+import firebase from "firebase/app";
+import "firebase/messaging";
 
-// Firebase Compat
-import firebase from "firebase/compat/app";
-import "firebase/compat/messaging";
-
-// Optional: Move to firebase-config.js
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyA1lMW1D2wtXDHsuFJKvuerRbRjK39y0YM",
   authDomain: "cs-25-317.firebaseapp.com",
@@ -13,8 +11,9 @@ const firebaseConfig = {
   storageBucket: "cs-25-317.appspot.com",
   messagingSenderId: "920068607900",
   appId: "1:920068607900:web:e02406c989697efeec0259",
-  vapidKey: "BAloxObNIPRr9QujTLBgmGOQn_kVDcPlm9VXPXYOkJm3WVJLVcb2_SDJLMnw-JF3nYpdOwPtK2NO1hN0QrR30X8"
 };
+
+const vapidKey = "BAloxObNIPRr9QujTLBgmGOQn_kVDcPlm9VXPXYOkJm3WVJLVcb2_SDJLMnw-JF3nYpdOwPtK2NO1hN0QrR30X8";
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
@@ -24,39 +23,29 @@ const messaging = firebase.messaging();
 
 export default function NotificationSetupCompat({ userId = 1 }) {
   useEffect(() => {
-    // Register service worker
+    // Register service worker if not already registered
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .getRegistration("/firebase-messaging-sw.js")
+        .register("/firebase-messaging-sw.js")
         .then((registration) => {
-          if (!registration) {
-            return navigator.serviceWorker.register("/firebase-messaging-sw.js");
-          }
-          console.log("Service Worker already registered:", registration.scope);
-          return registration;
-        })
-        .then((registration) => {
-          if (registration) {
-            console.log("Using service worker for messaging:", registration.scope);
-            messaging.useServiceWorker(registration);
-          }
+          console.log("Service Worker registered:", registration.scope);
+
+          // Handle foreground messages
+          messaging.onMessage((payload) => {
+            console.log(" Foreground message received:", payload);
+            const { title, body } = payload.notification;
+
+            if (Notification.permission === "granted") {
+              new Notification(title, {
+                body,
+                icon: "/icon.png",
+                badge: "/badge.png",
+              });
+            }
+          });
         })
         .catch((err) => console.error("Service Worker registration failed:", err));
     }
-
-    // Handle incoming messages
-    messaging.onMessage((payload) => {
-      console.log("📬 Message received in foreground:", payload);
-      const { title, body } = payload.notification;
-
-      if (Notification.permission === "granted") {
-        new Notification(title, {
-          body,
-          icon: "/icon.png",
-          badge: "/badge.png",
-        });
-      }
-    });
   }, []);
 
   const handleEnableNotifications = () => {
@@ -67,29 +56,23 @@ export default function NotificationSetupCompat({ userId = 1 }) {
           getTokenAndSendToBackend();
         } else {
           console.warn("Notification permission denied.");
-          alert("Notifications blocked!");
         }
       })
-      .catch((err) => console.error("Error requesting permission:", err));
+      .catch((err) => console.error("Permission error:", err));
   };
 
   const getTokenAndSendToBackend = () => {
-    navigator.serviceWorker.ready.then((registration) => {
-      messaging
-        .getToken({
-          vapidKey: firebaseConfig.vapidKey,
-          serviceWorkerRegistration: registration,
-        })
-        .then((token) => {
-          if (token) {
-            console.log("FCM Token:", token);
-            sendTokenToBackend(token);
-          } else {
-            console.warn("No registration token available.");
-          }
-        })
-        .catch((err) => console.error("Error getting FCM token:", err));
-    });
+    messaging
+      .getToken({ vapidKey }) // Just pass the VAPID key
+      .then((token) => {
+        if (token) {
+          console.log("📲 FCM Token:", token);
+          sendTokenToBackend(token);
+        } else {
+          console.warn("⚠️ No registration token available.");
+        }
+      })
+      .catch((err) => console.error("Token error:", err));
   };
 
   const sendTokenToBackend = (token) => {
@@ -98,14 +81,11 @@ export default function NotificationSetupCompat({ userId = 1 }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, userId }),
     })
-      .then((res) => {
-        if (!res.ok) throw new Error(`Backend error: ${res.statusText}`);
-        return res.json();
-      })
-      .then((data) => console.log("✅ Token saved:", data))
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.statusText)))
+      .then((data) => console.log("Token saved:", data))
       .catch((err) => {
-        console.error("❌ Error saving token:", err);
-        alert(`Error saving token: ${err.message}`);
+        console.error("Backend error:", err);
+        alert(`Error saving token: ${err}`);
       });
   };
 
@@ -118,3 +98,4 @@ export default function NotificationSetupCompat({ userId = 1 }) {
     </button>
   );
 }
+

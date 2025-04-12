@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ReminderCard } from "../components/ReminderCard";
 import BottomNavbar from "../components/BottomNavbar";
-import { Popup } from "../components/Popup";
+import  Popup from "../components/Popup";
 import { supabase } from "../lib/supabaseClient";
 import NotificationSetup from "../components/NotificationSetup"; // Direct import instead of dynamic
 

@@ -16,6 +16,9 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
     console.log("date", dateState);
     interval = 30;
   }
+  else if (source === 'edit'){
+    dateState = selectedReminder.date
+  }
 
   // States
   const [titleState, setTitleState] = useState(title || "");
