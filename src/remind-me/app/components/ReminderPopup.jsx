@@ -1,23 +1,43 @@
 import React, { useState, useEffect } from "react";
 
 const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, source, selectedReminder }) => {
+
   const formatDateForInput = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-    const day = String(dateObj.getDate()).padStart(2, "0");
+    const date = new Date(dateObj); 
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };  
 
+  const convertTo24HourFormat = (time) => {
+    const [hours, minutes, secondsPeriod] = time.split(':');
+    const seconds = secondsPeriod.slice(0, 2);
+    const period = secondsPeriod.slice(2); // AM/PM
+  
+    let hour = parseInt(hours, 10);
+  
+    // Convert hour based on AM/PM
+    if (period === "AM" && hour === 12) {
+      hour = 0; // 12 AM is midnight (00:00)
+    } else if (period === "PM" && hour !== 12) {
+      hour += 12; // Convert PM hour to 24-hour format
+    }
+    // Format hour and return in 24-hour format
+    const formattedHour = String(hour).padStart(2, "0");
+    return `${formattedHour}:${minutes}:${seconds}`;
+  };
 
   // fallback destructuring
-  let { title, interval, dateState } = selectedReminder || {};
+  let { id, title, interval, dateState } = selectedReminder || {};
   if (source === 'create') {
-    dateState = selectedDate; 
+    dateState = selectedDate;
     console.log("date", dateState);
     interval = 30;
   }
   else if (source === 'edit'){
-    dateState = selectedReminder.date
+    dateState = new Date(selectedDate);
+    dateState.setDate(dateState.getDate() + 1);
   }
 
   // States
@@ -31,12 +51,10 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
   // Autofill times on edit
   useEffect(() => {
     if (source === "edit" && selectedReminder) {
-      const start = selectedReminder.startTime?.slice(0, 5) || ""; // strip ":SS"
-      const end = selectedReminder.endTime?.slice(0, 5) || "";
+      const start = convertTo24HourFormat(selectedReminder.startTime?.trim() || "");
+      const end = convertTo24HourFormat(selectedReminder.endTime?.trim() || "");
       setStartTimeState(start); 
       setEndTimeState(end); 
-      console.log("st time: ", start);
-      console.log("en time:", end)
     }
   }, [source, selectedReminder]);
 
@@ -58,7 +76,7 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
   };
 
   const handleEndTimeChange = (e) => {
-    setEndTime(e.target.value);
+    setEndTimeState(e.target.value);
     setUserChangedEnd(true);
   };
 
@@ -68,7 +86,7 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
         <h3 className="text-xl text-white font-bold mb-4">
           {source === "edit" ? "Edit a Reminder" : "Create a Reminder"}
         </h3>
-        <form onSubmit={handleFormSubmit} className="space-y-3 text-lg">
+        <form onSubmit={(e) => handleFormSubmit(e, source, selectedDate, id)}className="space-y-3 text-lg">
           <div>
             <label className="block text-sm font-medium text-white">Title</label>
             <input

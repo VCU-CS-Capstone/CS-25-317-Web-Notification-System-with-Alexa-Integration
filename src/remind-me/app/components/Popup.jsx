@@ -15,34 +15,46 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
     setIsFormOpen(false);
   };
   
-  const handleFormSubmit = async (event) => {
+  const handleFormSubmit = async (event, source, selectedDate, id) => {
     event.preventDefault();
     setLoading(true);
 
-    const newReminder = {
+    const updatedReminder = {
       event_name: event.target.title.value,
       event_date: event.target.date.value,
       start_time: event.target.startTime.value,
-      end_time: event.target.endTime.value, // Assuming no end time is provided
+      end_time: event.target.endTime.value,
       interval: event.target.interval.value,
       userid: 1, 
     };
 
     try {
-      const {data, error } = await supabase
-      .from("events")
-      .insert([newReminder]);
+      if (source === 'create'){
+        const newReminder = {
+          event_name: event.target.title.value,
+          event_date: event.target.date.value,
+          start_time: event.target.startTime.value,
+          end_time: event.target.endTime.value,
+          interval: event.target.interval.value,
+          userid: 1, 
+        };
+        const {data, error} = await supabase
+          .from("events")
+          .insert([newReminder]);
+        if (error) throw new Error(error.message); 
+      } else {
+        const {data, error} = await supabase
+          .from("events")
+          .update(updatedReminder)
+          .eq("id", id); 
 
-      if (error){
-        throw new Error(error.message); 
+          if (error) throw new Error(error.message); 
       }
-    
-      console.log("Reminder added:", data)
-      setIsFormOpen(false);
-      fetchReminders();
-
+      setIsFormOpen(false); 
+      closePopup();
+      fetchReminders(selectedDate); 
     } catch (error) {
-      console.error("Error adding reminder:", error.message);
+      console.error(`Error ${source === 'create' ? 'adding' : 'updating'} reminder:`, error.message);
     }
     setLoading(false);
   };

@@ -72,7 +72,14 @@ const Dashboard = () => {
     setLoading(true);
     setError(null);
     try {
-      const formattedDate = date.toISOString().split("T")[0];
+      let formattedDate; 
+      if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        formattedDate = date; 
+      } else {
+        const dateObj = new Date(date);
+        formattedDate = dateObj.toISOString().split("T")[0];
+      }
+
       const { data, error } = await supabase
         .from("events")
         .select("*")
@@ -121,26 +128,6 @@ const Dashboard = () => {
     }
   };
 
-  // Use Supabase to update reminders
-const handleUpdate = async (updatedReminder) => {
-  if (!updatedReminder || !updatedReminder.id) return;
-  try {
-    const { id, ...fieldsToUpdate } = updatedReminder;
-
-    const { error } = await supabase
-      .from("events")
-      .update(fieldsToUpdate)
-      .eq("id", id);
-
-    if (error) throw error;
-
-    // Refresh reminders after update
-    closePopup();
-    fetchReminders(selectedDate);
-  } catch (err) {
-    console.error("Error updating reminder:", err.message);
-  }
-};
 
   useEffect(() => {
     fetchReminders(selectedDate);
