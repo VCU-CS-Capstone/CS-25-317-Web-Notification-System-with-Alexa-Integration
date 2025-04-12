@@ -10,24 +10,6 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
     return `${year}-${month}-${day}`;
   };  
 
-  const convertTo24HourFormat = (time) => {
-    const [hours, minutes, secondsPeriod] = time.split(':');
-    const seconds = secondsPeriod.slice(0, 2);
-    const period = secondsPeriod.slice(2); // AM/PM
-  
-    let hour = parseInt(hours, 10);
-  
-    // Convert hour based on AM/PM
-    if (period === "AM" && hour === 12) {
-      hour = 0; // 12 AM is midnight (00:00)
-    } else if (period === "PM" && hour !== 12) {
-      hour += 12; // Convert PM hour to 24-hour format
-    }
-    // Format hour and return in 24-hour format
-    const formattedHour = String(hour).padStart(2, "0");
-    return `${formattedHour}:${minutes}:${seconds}`;
-  };
-
   // fallback destructuring
   let { id, title, interval, dateState } = selectedReminder || {};
   if (source === 'create') {
@@ -51,8 +33,8 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
   // Autofill times on edit
   useEffect(() => {
     if (source === "edit" && selectedReminder) {
-      const start = convertTo24HourFormat(selectedReminder.startTime?.trim() || "");
-      const end = convertTo24HourFormat(selectedReminder.endTime?.trim() || "");
+      const start = selectedReminder.startTime;
+      const end = selectedReminder.endTime;
       setStartTimeState(start); 
       setEndTimeState(end); 
     }

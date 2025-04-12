@@ -77,18 +77,18 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, f
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-[#73FF00]  shadow-lg text-black">
         <div className="flex justify-around items-center p-3">
-          <button className="btn btn-outline border-black hover:bg-blue-800 hover:text-white text-black px-3 py-1 text-lg"
+          <button className="btn btn-outline border-black hover:bg-blue-800 hover:text-white text-black px-2 py-1 text-2xl"
             onClick={handlePrevDay}
           >
             Prev
           </button>
           <button
-            className="btn btn-primary px-3 py-1 text-lg hover:bg-blue-800"
+            className="btn btn-primary px-3 py-1 text-2xl hover:bg-blue-800"
             onClick={handleCreateClick}
           >
             Create
           </button>
-          <button className="btn btn-outline border-black hover:bg-blue-800 hover:text-white text-black px-3 py-1 text-lg"
+          <button className="btn btn-outline border-black hover:bg-blue-800 hover:text-white text-black px-1 py-1 text-2xl"
             onClick={handleNextDay}
           >
             Next

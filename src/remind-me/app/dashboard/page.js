@@ -54,17 +54,13 @@ const Dashboard = () => {
     }
   }, []); 
 
-  function tConvert(time) {
-    if (time === null) return null;
-    time = time
-      .toString()
-      .match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
-    if (time.length > 1) {
-      time = time.slice(1);
-      time[5] = +time[0] < 12 ? "AM" : "PM";
-      time[0] = +time[0] % 12 || 12;
-    }
-    return time.join("");
+  function removeSeconds(time) {
+    if (!time) return null;
+  
+    const parts = time.split(":");
+    if (parts.length < 2) return time; // if time is not properly formatted
+  
+    return `${parts[0]}:${parts[1]}`;
   }
 
   const fetchReminders = async (date = new Date()) => {
@@ -92,8 +88,8 @@ const Dashboard = () => {
       const formattedData = data.map((event) => ({
         id: event.id,
         title: event.event_name,
-        startTime: tConvert(event.start_time),
-        endTime: tConvert(event.end_time),
+        startTime: removeSeconds(event.start_time),
+        endTime: removeSeconds(event.end_time),
         interval: event.interval,
         date: event.event_date,
       }));
@@ -149,7 +145,7 @@ const Dashboard = () => {
               <ReminderCard
                 key={reminder.id}
                 title={reminder.title}
-                startTime={tConvert(reminder.startTime)}
+                startTime={removeSeconds(reminder.startTime)}
                 date={reminder.date}
                 onClick={() => handleCardClick(reminder)}
               />
