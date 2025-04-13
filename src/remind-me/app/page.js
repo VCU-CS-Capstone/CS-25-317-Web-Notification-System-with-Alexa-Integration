@@ -2,72 +2,69 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "./lib/supabaseClient";
+import bcrypt from "bcryptjs";
 
 export default function HomePage() {
   const router = useRouter();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
   const [email, setEmail] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false); 
+  const [errorMsg, setErrorMsg] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const handleLogin = async () => {
     setErrorMsg("");
-  
-    // Fetch the user from the users table by username or email
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("username", username)
-      .single(); // Ensure single user result
-  
-    if (error || !data || data.password !== password) {
-      setErrorMsg("Invalid username or password");
-      return;
-    }
-    localStorage.setItem('username', username);
 
-    //Added by Parker for User Token
-    //const token = jwt.sign({userId: users.id}, "your_secret_key", {expiresIn: "1h"});
-
-    //console.log("JWT Token", token);
-  
-    // Proceed to dashboard after successful login
-    router.push("/dashboard");
-  };
-  
-  
-
-  const handleSignUp = async () => {
-    setErrorMsg(""); 
-  
-    // Check if username already exists
-    const { data: existingUser, error: existingUserError } = await supabase
+    const { data: user, error } = await supabase
       .from("users")
       .select("*")
       .eq("username", username)
       .single();
-  
+
+    if (error || !user) {
+      setErrorMsg("Invalid username or password");
+      return;
+    }
+
+    const passwordMatch = bcrypt.compareSync(password, user.password);
+
+    if (!passwordMatch) {
+      setErrorMsg("Invalid username or password");
+      return;
+    }
+
+    localStorage.setItem("username", username);
+    router.push("/dashboard");
+  };
+
+  const handleSignUp = async () => {
+    setErrorMsg("");
+
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("*")
+      .eq("username", username)
+      .single();
+
     if (existingUser) {
       setErrorMsg("Username already taken");
       return;
     }
-  
-    // Insert the new user with username, password, email, and role
+
+    const hashedPassword = bcrypt.hashSync(password, 10);
+
     const { error } = await supabase
       .from("users")
-      .insert([{ username, password, email, role: 'user' }]);
-  
+      .insert([{ username, password: hashedPassword, email, role: "user" }]);
+
     if (error) {
       setErrorMsg("Error signing up. Please try again.");
       return;
     }
-  
-    // Redirect after successful sign-up
+
     router.push("/dashboard");
   };
-  
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-[url('/background-1.svg')] bg-cover bg-center bg-no-repeat py-12 px-4 sm:px-6 lg:px-8">
@@ -99,6 +96,7 @@ export default function HomePage() {
                 />
               </div>
             )}
+
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 Username
@@ -157,4 +155,3 @@ export default function HomePage() {
     </main>
   );
 }
-

@@ -90,6 +90,7 @@ export default function NotificationSetupCompat({ userId = 1 }) {
       .catch((err) => {
         console.error("Backend error:", err);
         alert(`Error saving token: ${err}`);
+        setPermissionGranted(false);
       });
   };
 
