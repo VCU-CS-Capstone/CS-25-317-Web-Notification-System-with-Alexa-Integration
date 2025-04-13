@@ -101,6 +101,8 @@ const Dashboard = () => {
         endTime: removeSeconds(event.end_time),
         interval: event.interval,
         date: event.event_date,
+        event_description: event.event_description, 
+        is_complete: event.is_complete
       }));
       setReminders(formattedData);
     } catch (err) {
@@ -156,12 +158,13 @@ const Dashboard = () => {
                 title={reminder.title}
                 startTime={removeSeconds(reminder.startTime)}
                 date={reminder.date}
+                event_description={reminder.event_description}
+                is_complete={reminder.is_complete}
                 onClick={() => handleCardClick(reminder)}
               />
             ))}
           </div>
         </div>
-
         {selectedReminder && selectedReminder.startTime && (
           <Popup
             selectedReminder={selectedReminder}

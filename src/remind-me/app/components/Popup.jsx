@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import ReminderPopup from "./ReminderPopup"; 
 import { supabase } from "../lib/supabaseClient";
+import ReminderCard from "./ReminderCard"; 
 
 const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) => {
-  const { title, startTime, endTime, interval, date } = selectedReminder;
+  const { title, startTime, endTime, interval, date, event_description, is_complete } = selectedReminder;
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
 
   const handleCreateClick = () => {
     setIsFormOpen(true);
@@ -15,6 +17,27 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
     setIsFormOpen(false);
   };
   
+  const toggleCompleteStatus = async () => {
+    try {
+      setLoading(true);
+      const updatedStatus = !is_complete; 
+  
+      const { error } = await supabase
+        .from("events")
+        .update({ is_complete: updatedStatus })
+        .eq("id", selectedReminder.id);
+  
+      if (error) throw new Error(error.message);
+  
+      await fetchReminders(date); // Refresh data
+      closePopup(); 
+    } catch (error) {
+      console.error("Error toggling complete status:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };  
+
   const handleFormSubmit = async (event, source, selectedDate, id) => {
     event.preventDefault();
     setLoading(true);
@@ -66,10 +89,13 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
           <p className="text-3xl text-white">
             {title}
           </p>
-          <p className="text-xl text-white">
+          <p className="text-3xl text-white">
             {date}
           </p>
         </div>
+        <p className="text-xl text-white mb-2">
+          {event_description}
+        </p>
         <p className="text-xl text-white mb-2">
           Time: {startTime} - {endTime}
         </p>
@@ -77,6 +103,12 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
           Notification Time: {interval} min.
         </p>
         <div className="flex justify-end space-x-3">
+          <button
+            className="px-3 py-2 rounded-md bg-blue-800 text-white text-xl hover:bg-blue-900 transition-colors"
+            onClick={toggleCompleteStatus}
+          >
+            Complete
+          </button>
           <button
             className="px-3 py-2 rounded-md bg-blue-800 text-white text-xl hover:bg-blue-900 transition-colors"
             onClick={closePopup}
@@ -99,7 +131,6 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
           </button>
         </div>
       </div>
-
 
       {isFormOpen && (
       <ReminderPopup
