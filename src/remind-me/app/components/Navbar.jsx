@@ -27,7 +27,7 @@ const ResponsiveNavbar = () => {
   };
 
   return (
-    <div className="  p-8">
+    <div className="  p-7">
       {/* Navbar */}
       <div className="navbar navbar-sticky   bg-[#73FF00] text-black ">
         <div className="flex items-center justify-between w-full">
@@ -40,12 +40,12 @@ const ResponsiveNavbar = () => {
           </button>
 
           {/* Logo */}
-          <a href="/dashboard" className="font-bold text-2xl">
+          <a href="/dashboard" className="font-bold text-3xl">
             RemindME
           </a>
 
           {/* Navbar Links (Visible on Medium Screens and Larger) */}
-          <div className="hidden md:flex gap-4 text-lg font-bold">
+          <div className="hidden md:flex gap-4 text-2xl font-bold">
             <Link href="/google" className="hover:text-blue-600 ">
             Google
             </Link>
@@ -82,20 +82,20 @@ const ResponsiveNavbar = () => {
             <nav className="mt-8 flex flex-col gap-4">
               <Link
                 href="/calendar"
-                className="text-xl 
+                className="text-2xl 
                 font-bold hover:text-blue-600 text-black"
               >
                 Calendar
               </Link>
               <Link href="/instructions"
-                className="text-xl 
+                className="text-2xl 
                 font-bold hover:text-blue-600 text-black"
               >
                 Help
               </Link>
               <Link
                 href="/"
-                className="text-xl font-bold hover:text-blue-600 text-black"
+                className="text-2xl font-bold hover:text-blue-600 text-black"
               >
                 Sign Out
               </Link>

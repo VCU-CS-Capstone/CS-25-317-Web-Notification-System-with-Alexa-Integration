@@ -54,18 +54,23 @@ const Dashboard = () => {
     }
   }, []); 
 
-  function tConvert(time) {
-    if (time === null) return null;
-    time = time
-      .toString()
-      .match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
-    if (time.length > 1) {
-      time = time.slice(1);
-      time[5] = +time[0] < 12 ? "AM" : "PM";
-      time[0] = +time[0] % 12 || 12;
-    }
-    return time.join("");
+  function removeSeconds(time) {
+    if (!time) return null;
+  
+    const parts = time.split(":");
+    if (parts.length < 2) return time; // if time is not properly formatted
+  
+    return `${parts[0]}:${parts[1]}`;
   }
+
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0'); // Day with leading zero
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Month with leading zero
+    const year = String(d.getFullYear()).slice(-2); // Get last two digits of the year
+  
+    return `${month}-${day}-${year}`; // Format as MM-DD-YY
+  };
 
   const fetchReminders = async (date = new Date()) => {
     localStorage.setItem('userId', userId);
@@ -92,10 +97,12 @@ const Dashboard = () => {
       const formattedData = data.map((event) => ({
         id: event.id,
         title: event.event_name,
-        startTime: tConvert(event.start_time),
-        endTime: tConvert(event.end_time),
+        startTime: removeSeconds(event.start_time),
+        endTime: removeSeconds(event.end_time),
         interval: event.interval,
         date: event.event_date,
+        event_description: event.event_description, 
+        is_complete: event.is_complete
       }));
       setReminders(formattedData);
     } catch (err) {
@@ -138,7 +145,7 @@ const Dashboard = () => {
       <div className="min-h-screen flex flex-col bg-white">
         <div className="flex-grow p-4">
           <h2 className="text-3xl font-bold mb-4 text-center text-gray-800">
-            {selectedDate.toLocaleDateString()}
+            {formatDate(selectedDate.toLocaleDateString())}
           </h2>
           {loading && (
             <p className="text-center text-gray-800">Loading reminders...</p>
@@ -149,14 +156,15 @@ const Dashboard = () => {
               <ReminderCard
                 key={reminder.id}
                 title={reminder.title}
-                startTime={tConvert(reminder.startTime)}
+                startTime={removeSeconds(reminder.startTime)}
                 date={reminder.date}
+                event_description={reminder.event_description}
+                is_complete={reminder.is_complete}
                 onClick={() => handleCardClick(reminder)}
               />
             ))}
           </div>
         </div>
-
         {selectedReminder && selectedReminder.startTime && (
           <Popup
             selectedReminder={selectedReminder}

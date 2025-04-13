@@ -3,56 +3,47 @@ import React, { useState, useEffect } from "react";
 const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, source, selectedReminder }) => {
 
   const formatDateForInput = (dateObj) => {
-    const date = new Date(dateObj); 
+    let date;
+    if (typeof dateObj === "string") {
+      const [year, month, day] = dateObj.split("-");
+      date = new Date(year, month - 1, day);
+    } else {
+      date = new Date(dateObj);
+    }
+  
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
-  };  
-
-  const convertTo24HourFormat = (time) => {
-    const [hours, minutes, secondsPeriod] = time.split(':');
-    const seconds = secondsPeriod.slice(0, 2);
-    const period = secondsPeriod.slice(2); // AM/PM
-  
-    let hour = parseInt(hours, 10);
-  
-    // Convert hour based on AM/PM
-    if (period === "AM" && hour === 12) {
-      hour = 0; // 12 AM is midnight (00:00)
-    } else if (period === "PM" && hour !== 12) {
-      hour += 12; // Convert PM hour to 24-hour format
-    }
-    // Format hour and return in 24-hour format
-    const formattedHour = String(hour).padStart(2, "0");
-    return `${formattedHour}:${minutes}:${seconds}`;
   };
+  
 
   // fallback destructuring
-  let { id, title, interval, dateState } = selectedReminder || {};
-  if (source === 'create') {
-    dateState = selectedDate;
-    console.log("date", dateState);
-    interval = 30;
-  }
-  else if (source === 'edit'){
-    dateState = new Date(selectedDate);
-    dateState.setDate(dateState.getDate() + 1);
-  }
+  let { id, title, interval } = selectedReminder || {};
 
   // States
   const [titleState, setTitleState] = useState(title || "");
   const [startTimeState, setStartTimeState] = useState("");
   const [endTimeState, setEndTimeState] = useState("");
-  const [intervalState, setIntervalState] = useState(interval || 30);
+  const [intervalState, setIntervalState] = useState(interval || 60);
   const [userChangedEnd, setUserChangedEnd] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const [dateState, setDateState] = useState(() => {
+    if (source === 'create') return selectedDate;
+    if (source === 'edit') {
+      const [year, month, day] = selectedDate.split("-");
+      const d = new Date(year, month - 1, day);
+      return d;
+    }
+    return new Date();
+  });
 
   // Autofill times on edit
   useEffect(() => {
     if (source === "edit" && selectedReminder) {
-      const start = convertTo24HourFormat(selectedReminder.startTime?.trim() || "");
-      const end = convertTo24HourFormat(selectedReminder.endTime?.trim() || "");
+      const start = selectedReminder.startTime;
+      const end = selectedReminder.endTime;
       setStartTimeState(start); 
       setEndTimeState(end); 
     }
@@ -83,12 +74,12 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-blue-600 p-6 rounded-lg shadow-lg w-96">
-        <h3 className="text-xl text-white font-bold mb-4">
+        <h3 className="text-2xl text-white font-bold mb-4">
           {source === "edit" ? "Edit a Reminder" : "Create a Reminder"}
         </h3>
-        <form onSubmit={(e) => handleFormSubmit(e, source, selectedDate, id)}className="space-y-3 text-lg">
+        <form onSubmit={(e) => handleFormSubmit(e, source, selectedDate, id)}className="space-y-2 text-xl" lang="en-GB">
           <div>
-            <label className="block text-sm font-medium text-white">Title</label>
+            <label className="block text-lg font-medium text-white">Title</label>
             <input
               type="text"
               name="title"
@@ -99,7 +90,7 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white">Start Time</label>
+            <label className="block text-lg font-medium text-white">Start Time</label>
             <input
               type="time"
               name="startTime"
@@ -110,7 +101,7 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white">End Time</label>
+            <label className="block text-lg font-medium text-white">End Time</label>
             <input
               type="time"
               name="endTime"
@@ -120,18 +111,22 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white">Date</label>
+            <label className="block text-lg font-medium text-white">Date</label>
             <input
               type="date"
               name="date"
               value={formatDateForInput(dateState)}
-              onChange={(e) => setDateState(new Date(e.target.value))}
+              onChange={(e) => {
+                const [year, month, day] = e.target.value.split("-");
+                const localDate = new Date(year, month - 1, day); // No timezone shift
+                setDateState(localDate);
+              }}              
               required
               className="w-full border rounded p-2 bg-white text-black"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white">Interval</label>
+            <label className="block text-lg font-medium text-white">Interval (minutes)</label>
             <input
               type="number"
               min={5}
