@@ -92,7 +92,7 @@ export default function NotificationSetupCompat({ userId = 1 }) {
   return (
     <button
       onClick={handleEnableNotifications}
-      className="fixed bottom-6 right-6 px-5 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition duration-200"
+      className="fixed bottom-[80px] right-6 px-5 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition duration-200 border-2 border-black"
     >
       Enable Notifications
     </button>
