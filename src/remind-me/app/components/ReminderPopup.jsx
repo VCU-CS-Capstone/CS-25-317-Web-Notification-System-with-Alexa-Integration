@@ -126,7 +126,7 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
             />
           </div>
           <div>
-            <label className="block text-lg font-medium text-white">Interval</label>
+            <label className="block text-lg font-medium text-white">Interval (minutes)</label>
             <input
               type="number"
               min={5}

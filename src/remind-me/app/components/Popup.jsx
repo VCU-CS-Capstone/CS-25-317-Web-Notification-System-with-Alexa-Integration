@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReminderPopup from "./ReminderPopup"; 
 import { supabase } from "../lib/supabaseClient";
-import ReminderCard from "./ReminderCard"; 
+
 
 const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) => {
   const { title, startTime, endTime, interval, date, event_description, is_complete } = selectedReminder;
@@ -17,6 +17,15 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
     setIsFormOpen(false);
   };
   
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0'); // Day with leading zero
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Month with leading zero
+    const year = String(d.getFullYear()).slice(-2); // Get last two digits of the year
+  
+    return `${month}-${day}-${year}`; // Format as MM-DD-YY
+  };
+
   const toggleCompleteStatus = async () => {
     try {
       setLoading(true);
@@ -90,7 +99,7 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
             {title}
           </p>
           <p className="text-3xl text-white">
-            {date}
+            {formatDate(date)}
           </p>
         </div>
         <p className="text-xl text-white mb-2">
