@@ -80,7 +80,7 @@ export default function NotificationSetupCompat({ userId = 1 }) {
   };
 
   const sendTokenToBackend = (token) => {
-    fetch("http://localhost:3002/save-token", {
+    fetch("/api/save-token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, userId }),

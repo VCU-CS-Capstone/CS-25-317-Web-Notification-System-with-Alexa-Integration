@@ -9,8 +9,10 @@ import cors from "cors";
 // Load environment variables
 dotenv.config();
 
+const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_CONFIG);
+
 // Initialize Firebase Admin SDK
-const serviceAccount = JSON.parse(fs.readFileSync("./cs-25-317-firebase-adminsdk-fbsvc-2c27dbbff6.json", "utf-8"));
+
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -26,7 +28,7 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5500"], // Frontend URLs
+  origin: ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5500", "https://remind-me-iota.vercel.app"], // Frontend URLs
   methods: "GET,POST,PUT,DELETE,OPTIONS",
   allowedHeaders: "Content-Type, Authorization",
 };
@@ -191,7 +193,7 @@ async function sendReminderNotifications() {
 setInterval(sendReminderNotifications, 60000);  // 60,000 ms = 1 minute
 
 // Start Express server
-const PORT = 3002;
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
 });

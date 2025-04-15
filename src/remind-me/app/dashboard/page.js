@@ -11,6 +11,25 @@ const NotificationSetup = dynamic(() => import("../components/NotificationSetup"
   ssr: false,
 });
 
+if (typeof window !== "undefined") {
+  window.onerror = function (message, source, lineno, colno, error) {
+    fetch("/api/log-error", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        source,
+        lineno,
+        colno,
+        stack: error?.stack,
+        userAgent: navigator.userAgent,
+        time: new Date().toISOString(),
+      }),
+    });
+  };
+}
+
+
 const Dashboard = () => {
   const [reminders, setReminders] = useState([]);
   const [selectedReminder, setSelectedReminder] = useState(null);
