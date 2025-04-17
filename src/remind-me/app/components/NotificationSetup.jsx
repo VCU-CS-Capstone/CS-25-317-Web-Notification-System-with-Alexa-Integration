@@ -30,10 +30,31 @@ export default function NotificationSetupCompat({ userId = 1 }) {
         .then((registration) => {
           console.log("Service Worker registered:", registration.scope);
 
+          // Set up foreground notification handler
+          // We'll use a flag to prevent duplicate notifications
+          window.lastNotificationId = window.lastNotificationId || null;
+          
           messaging.onMessage((payload) => {
             console.log("Foreground message received:", payload);
-            const { title, body } = payload.notification;
-            if (Notification.permission === "granted") {
+            
+            // Generate a notification ID based on content and timestamp
+            const notificationId = `${payload.notification?.title}-${Date.now()}`;
+            
+            // Check if this is a duplicate notification (received within last 2 seconds)
+            if (window.lastNotificationId && 
+                window.lastNotificationId.split('-')[0] === notificationId.split('-')[0] && 
+                Date.now() - parseInt(window.lastNotificationId.split('-')[1]) < 2000) {
+              console.log("Duplicate notification detected, ignoring");
+              return;
+            }
+            
+            // Store this notification ID
+            window.lastNotificationId = notificationId;
+            
+            // Only show notification in foreground if we're not already showing it in the background
+            // This prevents duplicate notifications
+            if (document.visibilityState === "visible" && Notification.permission === "granted") {
+              const { title, body } = payload.notification;
               new Notification(title, {
                 body,
                 icon: "/icon.png",

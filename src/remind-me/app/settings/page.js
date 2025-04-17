@@ -53,30 +53,61 @@ export default function SettingsPage() {
     }
     setUsername(storedUsername);
 
-    // Load user settings from localStorage
+    // Load user settings from database
     const loadSettings = async () => {
       try {
-        const storedTimezone = localStorage.getItem("timezone");
-        const storedColorMode = localStorage.getItem("colorMode");
-        const googleConnected = localStorage.getItem("googleConnected");
-
-        if (storedTimezone) setTimezone(storedTimezone);
-        if (storedColorMode !== null) setColorMode(storedColorMode);
-        if (googleConnected === "true") setIsGoogleConnected(true);
-        
-        // Fetch user email from database
-        const { data, error } = await supabase
+        // Fetch user data from database
+        const { data: userData, error: userError } = await supabase
           .from("users")
-          .select("email, google_connected")
+          .select("id, email, google_connected")
           .eq("username", storedUsername)
           .single();
           
-        if (data && data.email) {
-          setCurrentEmail(data.email);
-          if (data.google_connected) {
+        if (userError) throw userError;
+        
+        if (userData) {
+          setCurrentEmail(userData.email);
+          if (userData.google_connected) {
             setIsGoogleConnected(true);
             localStorage.setItem("googleConnected", "true");
           }
+          
+          // Fetch user settings from the new user_settings table
+          const { data: settingsData, error: settingsError } = await supabase
+            .from("user_settings")
+            .select("timezone, color")
+            .eq("user_id", userData.id)
+            .single();
+          
+          if (!settingsError && settingsData) {
+            // Set timezone from database (now stored as text)
+            if (settingsData.timezone) {
+              setTimezone(settingsData.timezone);
+            }
+            
+            // Set color mode from database
+            if (settingsData.color !== null && settingsData.color !== undefined) {
+              // Make sure we're setting a valid color mode value
+              const validColorModes = ["", "light", "dark"];
+              if (validColorModes.includes(settingsData.color)) {
+                setColorMode(settingsData.color);
+                console.log("Setting color mode from database:", settingsData.color);
+              } else {
+                console.warn("Invalid color mode from database:", settingsData.color);
+                setColorMode(""); // Set to default if invalid
+              }
+            }
+          } else {
+            // If no settings found, use defaults or localStorage as fallback
+            const storedTimezone = localStorage.getItem("timezone");
+            const storedColorMode = localStorage.getItem("colorMode");
+            
+            if (storedTimezone) setTimezone(storedTimezone);
+            if (storedColorMode !== null) setColorMode(storedColorMode);
+          }
+          
+          const googleConnected = localStorage.getItem("googleConnected");
+          if (googleConnected === "true") setIsGoogleConnected(true);
         }
       } catch (error) {
         console.error("Error loading settings:", error);
@@ -88,13 +119,22 @@ export default function SettingsPage() {
 
   // Apply color mode to the document
   useEffect(() => {
+    // Ensure we have a valid color mode value
+    const validColorModes = ["", "light", "dark"];
+    const validColorMode = validColorModes.includes(colorMode) ? colorMode : "";
+    
+    // Remove all possible classes first
     document.documentElement.classList.remove("light", "dark");
-    if (colorMode) {
-      document.documentElement.classList.add(colorMode);
+    
+    // Add the new class if it's not the default (empty string)
+    if (validColorMode) {
+      document.documentElement.classList.add(validColorMode);
     }
     
+    console.log("Applied color mode to document:", validColorMode || "default");
+    
     // Save to localStorage
-    localStorage.setItem("colorMode", colorMode);
+    localStorage.setItem("colorMode", validColorMode);
   }, [colorMode]);
 
   const saveSettings = async () => {
@@ -102,7 +142,59 @@ export default function SettingsPage() {
     setSaveMessage("");
 
     try {
-      // Save to localStorage
+      // Get user ID from database
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("username", username)
+        .single();
+      
+      if (userError) throw userError;
+      
+      // Check if user settings already exist
+      const { data: existingSettings, error: checkError } = await supabase
+        .from("user_settings")
+        .select("id")
+        .eq("user_id", userData.id)
+        .single();
+      
+      let upsertError;
+      
+      // Ensure we have a valid color mode value
+      const validColorModes = ["", "light", "dark"];
+      const validColorMode = validColorModes.includes(colorMode) ? colorMode : "";
+      
+      console.log("Saving color mode to database:", validColorMode || "default");
+      
+      if (!checkError && existingSettings) {
+        // Update existing settings
+        const { error } = await supabase
+          .from("user_settings")
+          .update({
+            timezone: timezone,
+            color: validColorMode
+          })
+          .eq("user_id", userData.id);
+        
+        upsertError = error;
+      } else {
+        // Insert new settings
+        const { error } = await supabase
+          .from("user_settings")
+          .insert([
+            {
+              user_id: userData.id,
+              timezone: timezone,
+              color: validColorMode
+            }
+          ]);
+        
+        upsertError = error;
+      }
+      
+      if (upsertError) throw upsertError;
+      
+      // Also save to localStorage as fallback
       localStorage.setItem("timezone", timezone);
       localStorage.setItem("colorMode", colorMode);
       
