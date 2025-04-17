@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { ReminderCard } from "../components/ReminderCard";
 import BottomNavbar from "../components/BottomNavbar";
-import  Popup from "../components/Popup";
+import Popup from "../components/Popup";
 import { supabase } from "../lib/supabaseClient";
 import dynamic from "next/dynamic";
 
@@ -29,14 +29,37 @@ if (typeof window !== "undefined") {
   };
 }
 
+// Create a separate component that uses useSearchParams
+import { useSearchParams } from "next/navigation";
 
-const Dashboard = () => {
+function DashboardContent() {
+  const searchParams = useSearchParams();
   const [reminders, setReminders] = useState([]);
   const [selectedReminder, setSelectedReminder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userId, setUserId] = useState(0);
+  const [userId, setUserId] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Parse date from URL parameter
+  useEffect(() => {
+    const dateParam = searchParams.get('date');
+    if (dateParam) {
+      try {
+        // Create a date from the YYYY-MM-DD format
+        const [year, month, day] = dateParam.split('-').map(num => parseInt(num, 10));
+        const newDate = new Date(year, month - 1, day);
+        
+        // Check if the date is valid
+        if (!isNaN(newDate.getTime())) {
+          setSelectedDate(newDate);
+          console.log(`Date set from URL: ${dateParam}`);
+        }
+      } catch (err) {
+        console.error("Error parsing date from URL:", err);
+      }
+    }
+  }, [searchParams]);
 
   const handleCardClick = (reminder) => {
     setSelectedReminder(reminder);
@@ -63,6 +86,9 @@ const Dashboard = () => {
           console.error("Error:", error);
         } else {
           setUserId(data.id);
+          // Save userId to localStorage for other components to use
+          localStorage.setItem('userId', data.id);
+          console.log("Set userId in localStorage:", data.id);
         }
       };
 
@@ -82,27 +108,70 @@ const Dashboard = () => {
     return `${parts[0]}:${parts[1]}`;
   }
 
+  // Format date as MM-DD-YY without timezone conversion
   const formatDate = (date) => {
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0'); // Day with leading zero
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // Month with leading zero
-    const year = String(d.getFullYear()).slice(-2); // Get last two digits of the year
+    let d;
+    if (typeof date === 'string') {
+      // Handle string date format (YYYY-MM-DD)
+      if (date.includes('-')) {
+        const [year, month, day] = date.split('-').map(num => parseInt(num, 10));
+        d = new Date(year, month - 1, day);
+      } else {
+        // Handle other string formats
+        d = new Date(date);
+      }
+    } else {
+      // Handle Date object
+      d = new Date(date);
+    }
+    
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = String(d.getFullYear()).slice(-2);
   
-    return `${month}-${day}-${year}`; // Format as MM-DD-YY
+    return `${month}-${day}-${year}`;
+  };
+
+  // Convert date to YYYY-MM-DD format for database queries without timezone issues
+  const formatDateForDB = (date) => {
+    let d;
+    
+    if (date instanceof Date) {
+      d = date;
+    } else if (typeof date === 'string') {
+      // If it's already in YYYY-MM-DD format, return it
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return date;
+      }
+      
+      // Otherwise parse it
+      d = new Date(date);
+    } else {
+      d = new Date();
+    }
+    
+    // Use local date methods to prevent timezone issues
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
   };
 
   const fetchReminders = async (date = new Date()) => {
-    localStorage.setItem('userId', userId);
+    // Don't attempt to fetch if userId is not available yet
+    if (!userId) {
+      console.log("Cannot fetch reminders: No userId available");
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     try {
-      let formattedDate; 
-      if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        formattedDate = date; 
-      } else {
-        const dateObj = new Date(date);
-        formattedDate = dateObj.toISOString().split("T")[0];
-      }
+      // Format the date for database query, preventing timezone issues
+      const formattedDate = formatDateForDB(date);
+      
+      console.log(`Fetching reminders for userId: ${userId} on date: ${formattedDate}`);
 
       const { data, error } = await supabase
         .from("events")
@@ -124,8 +193,10 @@ const Dashboard = () => {
         is_complete: event.is_complete
       }));
       setReminders(formattedData);
+      console.log(`Found ${formattedData.length} reminders for user ${userId}`);
     } catch (err) {
       setError(err.message);
+      console.error("Error fetching reminders:", err.message);
     } finally {
       setLoading(false);
     }
@@ -133,9 +204,16 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (userId) {
-      fetchReminders();
+      fetchReminders(selectedDate);
     }
   }, [userId]);
+
+  // Update when selected date changes
+  useEffect(() => {
+    if (userId) {
+      fetchReminders(selectedDate);
+    }
+  }, [selectedDate]);
 
   const handleDelete = async () => {
     if (!selectedReminder) return;
@@ -154,20 +232,15 @@ const Dashboard = () => {
     }
   };
 
-
-  useEffect(() => {
-    fetchReminders(selectedDate);
-  }, [selectedDate]);
-
   return (
     <>
-      <div className="min-h-screen flex flex-col bg-white">
+      <div className="min-h-screen flex flex-col bg-[var(--bg-primary)]">
         <div className="flex-grow p-4">
-          <h2 className="text-3xl font-bold mb-4 text-center text-gray-800">
-            {formatDate(selectedDate.toLocaleDateString())}
+          <h2 className="text-3xl font-bold mb-4 text-center text-[var(--text-primary)]">
+            {formatDate(selectedDate)}
           </h2>
           {loading && (
-            <p className="text-center text-gray-800">Loading reminders...</p>
+            <p className="text-center text-[var(--text-secondary)]">Loading reminders...</p>
           )}
           {error && <p className="text-center text-red-500">Error: {error}</p>}
           <div className="grid place-items-center grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
@@ -206,6 +279,17 @@ const Dashboard = () => {
         />
       </div>
     </>
+  );
+}
+
+// Main Dashboard component with Suspense boundary
+const Dashboard = () => {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
+      <p className="text-[var(--text-primary)] text-xl">Loading dashboard...</p>
+    </div>}>
+      <DashboardContent />
+    </Suspense>
   );
 };
 

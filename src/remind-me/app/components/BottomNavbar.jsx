@@ -32,16 +32,24 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, f
     event.preventDefault();
     setLoading(true);
 
-    const newReminder = {
-      event_name: event.target.title.value,
-      event_date: event.target.date.value,
-      start_time: event.target.startTime.value,
-      end_time: event.target.endTime.value, // Assuming no end time is provided
-      interval: event.target.interval.value,
-      userid: 1, 
-    };
+    // Make sure we have a userId
+    if (!userId) {
+      console.error("No userId found in localStorage");
+      alert("Please log in again to create reminders");
+      setLoading(false);
+      return;
+    }
 
     try {
+      const newReminder = {
+        event_name: event.target.title.value,
+        event_date: event.target.date.value,
+        start_time: event.target.startTime.value,
+        end_time: event.target.endTime.value, // Assuming no end time is provided
+        interval: event.target.interval.value,
+        userid: userId,
+      };
+
       const {data, error } = await supabase
       .from("events")
       .insert([newReminder]);
@@ -75,20 +83,20 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, f
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-[#73FF00]  shadow-lg text-black">
+      <div className="fixed bottom-0 left-0 right-0 bg-[var(--navbar-bg)] shadow-lg text-[var(--navbar-text)]">
         <div className="flex justify-around items-center p-3">
-          <button className="btn btn-outline border-black hover:bg-blue-800 hover:text-white text-black px-2 py-1 text-2xl"
+          <button className="btn btn-outline border-[var(--navbar-text)] hover:bg-blue-800 hover:text-white text-[var(--navbar-text)] px-2 py-1 text-2xl"
             onClick={handlePrevDay}
           >
             Prev
           </button>
           <button
-            className="btn btn-primary px-3 py-1 text-2xl hover:bg-blue-800"
+            className="btn bg-[var(--bg-secondary)] px-3 py-1 text-2xl hover:bg-blue-800 text-[var(--text-primary)]"
             onClick={handleCreateClick}
           >
             Create
           </button>
-          <button className="btn btn-outline border-black hover:bg-blue-800 hover:text-white text-black px-1 py-1 text-2xl"
+          <button className="btn btn-outline border-[var(--navbar-text)] hover:bg-blue-800 hover:text-white text-[var(--navbar-text)] px-1 py-1 text-2xl"
             onClick={handleNextDay}
           >
             Next
@@ -111,6 +119,3 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, f
 };
 
 export default BottomNavbar;
-
-
-

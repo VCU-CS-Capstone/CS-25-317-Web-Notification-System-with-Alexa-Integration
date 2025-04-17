@@ -1,3 +1,79 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* iOS PWA Safe Area Fixes */
+:root {
+  --sat: env(safe-area-inset-top);
+  --sar: env(safe-area-inset-right);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+  
+  /* High contrast mode variables (default) - Original colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --accent-color: #73FF00;
+  --navbar-bg: #73FF00;
+  --navbar-text: #000000;
+}
+
+/* Light mode variables - Velvet purple and creamy white */
+.light {
+  --bg-primary: #f5f5f0; /* Creamy white */
+  --bg-secondary: #e8e8e0; /* Slightly darker creamy white */
+  --text-primary: #4a235a; /* Velvet purple */
+  --text-secondary: #6c3483; /* Lighter velvet purple */
+  --accent-color: #8e44ad; /* Accent purple */
+  --navbar-bg: #4a235a; /* Velvet purple */
+  --navbar-text: #f5f5f0; /* Creamy white */
+}
+
+/* Dark mode variables - Cream and black */
+.dark {
+  --bg-primary: #121212; /* Near black */
+  --bg-secondary: #1e1e1e; /* Slightly lighter black */
+  --text-primary: #f5f5f0; /* Creamy white */
+  --text-secondary: #e8e8e0; /* Slightly darker creamy white */
+  --accent-color: #000000; /* Pure black for buttons */
+  --text-on-accent: #f5f5f0; /* Creamy white text on accent */
+  --navbar-bg: #000000; /* Pure black */
+  --navbar-text: #f5f5f0; /* Creamy white */
+  --cancel-color: #dc2626; /* Red */
+  --cancel-color-hover: #b91c1c; /* Darker red */
+  --text-on-cancel: #ffffff; /* White text on cancel button */
+  --accent-color-hover: #333333; /* Slightly lighter black for hover */
+}
+
+/* Fix for full-bleed backgrounds */
+body {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Fix for fixed position elements like navbar */
+.navbar-sticky {
+  padding-top: var(--sat);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+/* Apply theme colors to navbar */
+.light .navbar.navbar-sticky {
+  background-color: var(--navbar-bg);
+  color: var(--navbar-text);
+}
+
+.dark .navbar.navbar-sticky {
+  background-color: var(--navbar-bg);
+  color: var(--navbar-text);
+}

@@ -27,33 +27,33 @@ const ResponsiveNavbar = () => {
   };
 
   return (
-    <div className="  p-7">
+    <div className="w-full">
       {/* Navbar */}
-      <div className="navbar navbar-sticky   bg-[#73FF00] text-black ">
-        <div className="flex items-center justify-between w-full">
+      <div className="navbar navbar-sticky bg-[var(--navbar-bg)] text-[var(--navbar-text)]">
+        <div className="flex items-center justify-between w-full px-7 py-4">
           {/* Drawer Toggle Button (Small Screens) */}
           <button
-            className="btn text-lg btn-primary md:hidden hover:bg-slate-700"
+            className="btn text-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] md:hidden hover:bg-slate-700"
             onClick={toggleDrawer}
           >
             ☰
           </button>
 
           {/* Logo */}
-          <a href="/dashboard" className="font-bold text-3xl">
+          <Link href="/dashboard" className="font-bold text-3xl">
             RemindME
-          </a>
+          </Link>
 
           {/* Navbar Links (Visible on Medium Screens and Larger) */}
           <div className="hidden md:flex gap-4 text-2xl font-bold">
-            <Link href="/google" className="hover:text-blue-600 ">
-            Google
-            </Link>
-            <Link href="/calender" className="hover:text-blue-600 ">
+            <Link href="/calendar" className="hover:text-blue-600 ">
               Calendar
             </Link>
             <Link href="/instructions" className="hover:text-blue-600 ">
               Help
+            </Link>
+            <Link href="/settings" className="hover:text-blue-600 ">
+              Settings
             </Link>
             <Link href="/" className="hover:text-blue-600 ">
               Sign Out
@@ -65,16 +65,16 @@ const ResponsiveNavbar = () => {
       {/* Drawer and Backdrop */}
       {isDrawerOpen && (
         <div
-          className="fixed inset-0 bg-black  bg-opacity-50 z-50"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50"
           onClick={closeDrawer} // Close drawer when backdrop is clicked
         >
           {/* Drawer Content */}
           <div
-            className="fixed top-0 left-0 bg-[#73FF00]  w-72 h-full shadow-md z-50 p-4"
+            className="fixed top-0 left-0 bg-[var(--bg-secondary)] w-72 h-full shadow-md z-50 pt-[env(safe-area-inset-top)] pl-4 pr-4 pb-4"
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the drawer
           >
             <button
-              className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-black hover:bg-blue-600"
+              className="btn btn-sm btn-circle btn-ghost absolute right-4 top-[calc(env(safe-area-inset-top)+1rem)] text-[var(--text-primary)] hover:bg-blue-600"
               onClick={closeDrawer}
             >
               ✕
@@ -83,19 +83,27 @@ const ResponsiveNavbar = () => {
               <Link
                 href="/calendar"
                 className="text-2xl 
-                font-bold hover:text-blue-600 text-black"
+                font-bold hover:text-blue-600 text-[var(--text-primary)]"
               >
                 Calendar
               </Link>
-              <Link href="/instructions"
+              <Link 
+                href="/instructions"
                 className="text-2xl 
-                font-bold hover:text-blue-600 text-black"
+                font-bold hover:text-blue-600 text-[var(--text-primary)]"
               >
                 Help
               </Link>
+              <Link 
+                href="/settings"
+                className="text-2xl 
+                font-bold hover:text-blue-600 text-[var(--text-primary)]"
+              >
+                Settings
+              </Link>
               <Link
                 href="/"
-                className="text-2xl font-bold hover:text-blue-600 text-black"
+                className="text-2xl font-bold hover:text-blue-600 text-[var(--text-primary)]"
               >
                 Sign Out
               </Link>

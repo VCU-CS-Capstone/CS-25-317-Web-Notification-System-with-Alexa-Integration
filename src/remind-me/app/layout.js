@@ -14,7 +14,7 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-// ✅ Built-in metadata support for Next.js App Router
+// Built-in metadata support for Next.js App Router
 export const metadata = {
   title: "Remind Me",
   description: "Smart reminders with push notifications and Alexa integration.",
@@ -28,13 +28,38 @@ export const metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
+    title: "Remind Me",
   },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    viewportFit: 'cover'
+  }
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-white`}>
+      <head>
+        {/* Script to apply color mode before page renders to prevent flash */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                const colorMode = localStorage.getItem('colorMode') || '';
+                document.documentElement.classList.remove('light', 'dark');
+                if (colorMode) {
+                  document.documentElement.classList.add(colorMode);
+                }
+              } catch (e) {
+                console.error('Error applying color mode:', e);
+              }
+            })();
+          `
+        }} />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden`}>
         <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>

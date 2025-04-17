@@ -11,7 +11,11 @@ export default function HomePage() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
 
   const handleLogin = async () => {
     setErrorMsg("");
@@ -65,91 +69,243 @@ export default function HomePage() {
 
     router.push("/dashboard");
   };
+  
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setIsResetting(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+    
+    if (!resetEmail) {
+      setErrorMsg("Please enter your email address");
+      setIsResetting(false);
+      return;
+    }
+    
+    try {
+      // Check if the email exists in the database
+      const { data, error } = await supabase
+        .from("users")
+        .select("email")
+        .eq("email", resetEmail)
+        .single();
+      
+      if (error || !data) {
+        setErrorMsg("No account found with this email address");
+        setIsResetting(false);
+        return;
+      }
+      
+      // Generate a random reset token
+      const resetToken = Math.random().toString(36).substring(2, 15) + 
+                         Math.random().toString(36).substring(2, 15);
+      const resetExpires = new Date();
+      resetExpires.setHours(resetExpires.getHours() + 1); // Token valid for 1 hour
+      
+      // Store the reset token in the database
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ 
+          reset_token: resetToken,
+          reset_expires: resetExpires.toISOString()
+        })
+        .eq("email", resetEmail);
+      
+      if (updateError) {
+        throw updateError;
+      }
+      
+      // In a real application, you would send an email with a link containing the reset token
+      // For this demo, we'll just show a success message
+      console.log(`Reset token for ${resetEmail}: ${resetToken}`);
+      console.log(`Reset link would be: https://your-app.com/reset-password?token=${resetToken}`);
+      
+      setSuccessMsg("Password reset instructions have been sent to your email");
+      
+      // In a real application, you would use an email service like SendGrid, AWS SES, etc.
+      // Example code for sending email (not functional in this demo):
+      /*
+      const emailContent = `
+        <h1>Password Reset</h1>
+        <p>You requested a password reset for your RemindMe account.</p>
+        <p>Click the link below to reset your password. This link is valid for 1 hour.</p>
+        <a href="https://your-app.com/reset-password?token=${resetToken}">Reset Password</a>
+      `;
+      
+      await sendEmail({
+        to: resetEmail,
+        subject: "Password Reset Request",
+        html: emailContent
+      });
+      */
+      
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      setErrorMsg("An error occurred. Please try again.");
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-[url('/background-1.svg')] bg-cover bg-center bg-no-repeat py-12 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-[url('/background-1.svg')] bg-cover bg-center bg-no-repeat py-12 px-4 sm:px-6 lg:px-8 pt-[calc(env(safe-area-inset-top)+3rem)]" style={{
+      marginTop: 'calc(-1 * env(safe-area-inset-top))',
+      paddingTop: 'calc(env(safe-area-inset-top) + 3rem)'
+    }}>
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-800">
-            {isSignUp ? "Sign Up for Remind Me" : "Sign In to Remind Me"}
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--text-primary)]">
+            {isForgotPassword 
+              ? "Reset Your Password" 
+              : isSignUp 
+                ? "Sign Up for Remind Me" 
+                : "Sign In to Remind Me"}
           </h2>
         </div>
-        <div className="bg-white py-8 px-6 shadow-lg rounded-lg space-y-6">
-          <div className="space-y-4">
-            {isSignUp && (
+        <div className="bg-[var(--bg-primary)] py-8 px-6 shadow-lg rounded-lg space-y-6">
+          {isForgotPassword ? (
+            <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email
+                <label htmlFor="resetEmail" className="block text-sm font-medium text-[var(--text-secondary)]">
+                  Email Address
                 </label>
                 <input
-                  id="email"
-                  name="email"
+                  id="resetEmail"
+                  name="resetEmail"
                   type="email"
-                  autoComplete="off"
-                  required={isSignUp}
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setErrorMsg("");
-                  }}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  autoComplete="email"
+                  required
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                 />
               </div>
-            )}
+              
+              <button
+                type="submit"
+                disabled={isResetting}
+                className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-[var(--text-on-accent)] bg-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-color)]"
+              >
+                {isResetting ? "Sending..." : "Send Reset Instructions"}
+              </button>
+              
+              {errorMsg && (
+                <p className="text-red-500 text-sm text-center">{errorMsg}</p>
+              )}
+              
+              {successMsg && (
+                <p className="text-green-500 text-sm text-center">{successMsg}</p>
+              )}
+              
+              <p className="text-sm text-center text-[var(--text-secondary)]">
+                <button
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    setErrorMsg("");
+                    setSuccessMsg("");
+                  }}
+                  className="text-blue-600 hover:underline focus:outline-none"
+                >
+                  Back to Sign In
+                </button>
+              </p>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              {isSignUp && (
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-[var(--text-secondary)]">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="off"
+                    required={isSignUp}
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setErrorMsg("");
+                    }}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+                  />
+                </div>
+              )}
 
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="off"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-[var(--text-secondary)]">
+                  Username
+                </label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="off"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)]">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="off"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+                />
+              </div>
+            
+              <button
+                onClick={isSignUp ? handleSignUp : handleLogin}
+                className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-[var(--text-on-accent)] bg-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-color)]"
+              >
+                {isSignUp ? "Sign Up" : "Sign In"}
+              </button>
+
+              {errorMsg && (
+                <p className="text-red-500 text-sm text-center">{errorMsg}</p>
+              )}
+
+              <div className="flex flex-col space-y-2">
+                <p className="text-sm text-center text-[var(--text-secondary)]">
+                  {isSignUp ? "Already have an account?" : "New here?"}{" "}
+                  <button
+                    onClick={() => {
+                      setIsSignUp(!isSignUp);
+                      setErrorMsg("");
+                    }}
+                    className="text-blue-600 hover:underline focus:outline-none"
+                  >
+                    {isSignUp ? "Sign In" : "Sign Up"}
+                  </button>
+                </p>
+                
+                {!isSignUp && (
+                  <p className="text-sm text-center text-[var(--text-secondary)]">
+                    <button
+                      onClick={() => {
+                        setIsForgotPassword(true);
+                        setErrorMsg("");
+                      }}
+                      className="text-blue-600 hover:underline focus:outline-none"
+                    >
+                      Forgot your password?
+                    </button>
+                  </p>
+                )}
+              </div>
             </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="off"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-          </div>
-
-          <button
-            onClick={isSignUp ? handleSignUp : handleLogin}
-            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            {isSignUp ? "Sign Up" : "Sign In"}
-          </button>
-
-          {errorMsg && (
-            <p className="text-red-500 text-sm text-center">{errorMsg}</p>
           )}
-
-          <p className="text-sm text-center text-gray-600">
-            {isSignUp ? "Already have an account?" : "New here?"}{" "}
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-blue-600 hover:underline focus:outline-none"
-            >
-              {isSignUp ? "Sign In" : "Sign Up"}
-            </button>
-          </p>
         </div>
       </div>
     </main>
