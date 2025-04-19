@@ -6,6 +6,7 @@ import BottomNavbar from "../components/BottomNavbar";
 import Popup from "../components/Popup";
 import { supabase } from "../lib/supabaseClient";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 
 const NotificationSetup = dynamic(() => import("../components/NotificationSetup"), {
   ssr: false,
@@ -33,6 +34,7 @@ if (typeof window !== "undefined") {
 import { useSearchParams } from "next/navigation";
 
 function DashboardContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [reminders, setReminders] = useState([]);
   const [selectedReminder, setSelectedReminder] = useState(null);
@@ -232,13 +234,28 @@ function DashboardContent() {
     }
   };
 
+  const navigateToDateRange = () => {
+    router.push('/date-range');
+  };
+
   return (
     <>
       <div className="min-h-screen flex flex-col bg-[var(--bg-primary)]">
         <div className="flex-grow p-4">
-          <h2 className="text-3xl font-bold mb-4 text-center text-[var(--text-primary)]">
-            {formatDate(selectedDate)}
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-3xl font-bold text-[var(--text-primary)]">
+              {formatDate(selectedDate)}
+            </h2>
+            <button 
+              onClick={navigateToDateRange}
+              className="px-4 py-2 bg-[var(--accent-color)] text-[var(--text-on-accent)] rounded-md hover:bg-[var(--accent-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-color)] flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Date Range
+            </button>
+          </div>
           {loading && (
             <p className="text-center text-[var(--text-secondary)]">Loading reminders...</p>
           )}

@@ -3,6 +3,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "./lib/supabaseClient";
 import bcrypt from "bcryptjs";
+import dynamic from "next/dynamic";
+
+// Dynamically import components to improve initial load time
+const FeaturesSection = dynamic(() => import("./components/FeaturesSection"));
+const TestimonialsSection = dynamic(() => import("./components/TestimonialsSection"));
+const MobileShortcutGuide = dynamic(() => import("./components/MobileShortcutGuide"));
 
 export default function HomePage() {
   const router = useRouter();
@@ -116,11 +122,19 @@ export default function HomePage() {
       }
       
       // In a real application, you would send an email with a link containing the reset token
-      // For this demo, we'll just show a success message
+      // For this demo, we'll just show the reset link directly to the user
       console.log(`Reset token for ${resetEmail}: ${resetToken}`);
-      console.log(`Reset link would be: https://your-app.com/reset-password?token=${resetToken}`);
       
-      setSuccessMsg("Password reset instructions have been sent to your email");
+      // Get the current domain for the reset link
+      const domain = window.location.origin;
+      const resetLink = `${domain}/reset-password?token=${resetToken}`;
+      console.log(`Reset link: ${resetLink}`);
+      
+      // Show the reset link to the user instead of just a success message
+      setSuccessMsg(
+        `Since email sending is not configured, please use this link to reset your password (valid for 1 hour):\n\n` +
+        resetLink
+      );
       
       // In a real application, you would use an email service like SendGrid, AWS SES, etc.
       // Example code for sending email (not functional in this demo):
@@ -152,17 +166,29 @@ export default function HomePage() {
       marginTop: 'calc(-1 * env(safe-area-inset-top))',
       paddingTop: 'calc(env(safe-area-inset-top) + 3rem)'
     }}>
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--text-primary)]">
-            {isForgotPassword 
-              ? "Reset Your Password" 
-              : isSignUp 
-                ? "Sign Up for Remind Me" 
-                : "Sign In to Remind Me"}
-          </h2>
+      <div className="max-w-4xl w-full space-y-8">
+        <div className="text-center">
+          <h1 className="mt-6 text-4xl font-extrabold text-[var(--text-primary)] mb-2">
+            Remind Me
+          </h1>
+          <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">
+            Your smart reminder system with Alexa integration and cross-device synchronization
+          </p>
         </div>
-        <div className="bg-[var(--bg-primary)] py-8 px-6 shadow-lg rounded-lg space-y-6">
+        
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Left column: Login form */}
+          <div className="md:w-1/2 space-y-6">
+            <div>
+              <h2 className="text-center text-2xl font-bold text-[var(--text-primary)]">
+                {isForgotPassword 
+                  ? "Reset Your Password" 
+                  : isSignUp 
+                    ? "Sign Up for Remind Me" 
+                    : "Sign In to Remind Me"}
+              </h2>
+            </div>
+            <div className="bg-[var(--bg-primary)] py-8 px-6 shadow-lg rounded-lg space-y-6">
           {isForgotPassword ? (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
@@ -306,6 +332,25 @@ export default function HomePage() {
               </div>
             </div>
           )}
+            </div>
+            
+            {/* Mobile Shortcut Guide */}
+            <div className="mt-4">
+              <MobileShortcutGuide />
+            </div>
+          </div>
+          
+          {/* Right column: Features and Testimonials */}
+          <div className="md:w-1/2 space-y-6">
+            <FeaturesSection />
+            <TestimonialsSection />
+          </div>
+        </div>
+        
+        {/* Footer */}
+        <div className="text-center text-sm text-[var(--text-secondary)] mt-8">
+          <p>© {new Date().getFullYear()} Remind Me. All rights reserved.</p>
+          <p className="mt-1">A VCU CS Capstone Project</p>
         </div>
       </div>
     </main>

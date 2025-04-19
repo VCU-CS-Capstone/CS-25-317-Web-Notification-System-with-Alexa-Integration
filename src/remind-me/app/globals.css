@@ -14,7 +14,8 @@
   --bg-secondary: #f3f4f6;
   --text-primary: #111827;
   --text-secondary: #4b5563;
-  --accent-color: #73FF00;
+  --accent-color: #60a5fa; /* blue-400 for high contrast mode */
+  --accent-color-hover: #3b82f6; /* blue-500 for high contrast mode */
   --navbar-bg: #73FF00;
   --navbar-text: #000000;
 }
@@ -26,6 +27,7 @@
   --text-primary: #4a235a; /* Velvet purple */
   --text-secondary: #6c3483; /* Lighter velvet purple */
   --accent-color: #8e44ad; /* Accent purple */
+  --accent-color-hover: #6c3483; /* Darker purple for hover */
   --navbar-bg: #4a235a; /* Velvet purple */
   --navbar-text: #f5f5f0; /* Creamy white */
 }
@@ -76,4 +78,42 @@ body {
 .dark .navbar.navbar-sticky {
   background-color: var(--navbar-bg);
   color: var(--navbar-text);
+}
+
+/* Font size classes */
+.text-small {
+  font-size: 0.875rem; /* 14px */
+}
+
+.text-medium {
+  font-size: 1rem; /* 16px - default */
+}
+
+.text-large {
+  font-size: 1.125rem; /* 18px */
+}
+
+/* Apply font sizes to different elements */
+.text-small h1 {
+  font-size: 1.5rem;
+}
+
+.text-small h2 {
+  font-size: 1.25rem;
+}
+
+.text-small p, .text-small div, .text-small span, .text-small button, .text-small input, .text-small select, .text-small textarea {
+  font-size: 0.875rem;
+}
+
+.text-large h1 {
+  font-size: 2.25rem;
+}
+
+.text-large h2 {
+  font-size: 1.875rem;
+}
+
+.text-large p, .text-large div, .text-large span, .text-large button, .text-large input, .text-large select, .text-large textarea {
+  font-size: 1.125rem;
 }

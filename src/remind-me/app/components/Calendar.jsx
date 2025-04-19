@@ -179,10 +179,10 @@ const Calendar = ({ selectedDate, onDateSelect }) => {
     return reminders[formattedDate] && reminders[formattedDate].length > 0;
   };
 
-  // Handle date selection with Next.js router
+  // Handle date selection without redirect
   const handleDateSelect = (date) => {
     onDateSelect(date);
-    router.push(`/dashboard?date=${formatDateForDB(date)}`);
+    // Removed redirect to dashboard
   };
 
   // Navigate to monthly view

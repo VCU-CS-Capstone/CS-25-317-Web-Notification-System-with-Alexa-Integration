@@ -3,12 +3,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import Link from "next/link";
+import bcrypt from "bcryptjs";
 
 export default function SettingsPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [timezone, setTimezone] = useState("America/New_York");
   const [colorMode, setColorMode] = useState(""); // Default is empty, will be set to root (high contrast) in useEffect
+  const [fontSize, setFontSize] = useState("medium"); // Default font size
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   
@@ -44,6 +46,13 @@ export default function SettingsPage() {
     { value: "dark", label: "Dark Mode", description: "Black background with cream text" },
   ];
 
+  // Font size options
+  const fontSizes = [
+    { value: "small", label: "Small", description: "Smaller text for more content on screen" },
+    { value: "medium", label: "Medium (Default)", description: "Standard text size" },
+    { value: "large", label: "Large", description: "Larger text for better readability" }
+  ];
+
   useEffect(() => {
     // Get username from localStorage
     const storedUsername = localStorage.getItem("username");
@@ -52,6 +61,12 @@ export default function SettingsPage() {
       return;
     }
     setUsername(storedUsername);
+    
+    // Get color mode from localStorage first to prevent flicker
+    const storedColorMode = localStorage.getItem("colorMode");
+    if (storedColorMode !== null) {
+      setColorMode(storedColorMode);
+    }
 
     // Load user settings from database
     const loadSettings = async () => {
@@ -66,44 +81,68 @@ export default function SettingsPage() {
         if (userError) throw userError;
         
         if (userData) {
-          setCurrentEmail(userData.email);
+          // Set email with fallback for null/undefined values
+          console.log("User data from database:", userData);
+          console.log("Email from database:", userData.email);
+          console.log("Email type:", typeof userData.email);
+          // Force convert to string and trim
+          const emailValue = userData.email ? String(userData.email).trim() : "";
+          console.log("Processed email value:", emailValue);
+          setCurrentEmail(emailValue);
           if (userData.google_connected) {
             setIsGoogleConnected(true);
             localStorage.setItem("googleConnected", "true");
           }
           
           // Fetch user settings from the new user_settings table
+          console.log("Fetching settings for user ID:", userData.id);
           const { data: settingsData, error: settingsError } = await supabase
             .from("user_settings")
-            .select("timezone, color")
-            .eq("user_id", userData.id)
-            .single();
+            .select("*")
+            .eq("user_id", userData.id);
           
-          if (!settingsError && settingsData) {
+          console.log("Settings data array:", settingsData);
+          
+          // Check if we have any settings records
+          if (settingsData && settingsData.length > 0) {
+            const userSettings = settingsData[0];
+            console.log("Found user settings:", userSettings);
             // Set timezone from database (now stored as text)
-            if (settingsData.timezone) {
-              setTimezone(settingsData.timezone);
+            if (userSettings.timezone) {
+              setTimezone(userSettings.timezone);
             }
             
-            // Set color mode from database
-            if (settingsData.color !== null && settingsData.color !== undefined) {
+            // Set color mode from database only if different from localStorage
+            const storedColorMode = localStorage.getItem("colorMode");
+            if (userSettings.color !== null && userSettings.color !== undefined) {
               // Make sure we're setting a valid color mode value
               const validColorModes = ["", "light", "dark"];
-              if (validColorModes.includes(settingsData.color)) {
-                setColorMode(settingsData.color);
-                console.log("Setting color mode from database:", settingsData.color);
+              if (validColorModes.includes(userSettings.color)) {
+                // Only update if different from current localStorage value
+                if (userSettings.color !== storedColorMode) {
+                  console.log("Setting color mode from database:", userSettings.color);
+                  setColorMode(userSettings.color);
+                }
               } else {
-                console.warn("Invalid color mode from database:", settingsData.color);
-                setColorMode(""); // Set to default if invalid
+                console.warn("Invalid color mode from database:", userSettings.color);
+                // Don't change the color mode if invalid
               }
+            }
+            
+            // Set font size from database
+            if (userSettings.font_size) {
+              setFontSize(userSettings.font_size);
+              localStorage.setItem("fontSize", userSettings.font_size);
             }
           } else {
             // If no settings found, use defaults or localStorage as fallback
             const storedTimezone = localStorage.getItem("timezone");
             const storedColorMode = localStorage.getItem("colorMode");
+            const storedFontSize = localStorage.getItem("fontSize");
             
             if (storedTimezone) setTimezone(storedTimezone);
             if (storedColorMode !== null) setColorMode(storedColorMode);
+            if (storedFontSize) setFontSize(storedFontSize);
           }
           
           const googleConnected = localStorage.getItem("googleConnected");
@@ -119,6 +158,11 @@ export default function SettingsPage() {
 
   // Apply color mode to the document
   useEffect(() => {
+    // Skip if colorMode is null or undefined (initial state)
+    if (colorMode === null || colorMode === undefined) {
+      return;
+    }
+    
     // Ensure we have a valid color mode value
     const validColorModes = ["", "light", "dark"];
     const validColorMode = validColorModes.includes(colorMode) ? colorMode : "";
@@ -136,6 +180,20 @@ export default function SettingsPage() {
     // Save to localStorage
     localStorage.setItem("colorMode", validColorMode);
   }, [colorMode]);
+  
+  // Apply font size to the document
+  useEffect(() => {
+    if (!fontSize) return;
+    
+    // Remove all possible font size classes first
+    document.documentElement.classList.remove("text-small", "text-medium", "text-large");
+    
+    // Add the new font size class
+    document.documentElement.classList.add(`text-${fontSize}`);
+    
+    // Save to localStorage
+    localStorage.setItem("fontSize", fontSize);
+  }, [fontSize]);
 
   const saveSettings = async () => {
     setIsSaving(true);
@@ -152,27 +210,36 @@ export default function SettingsPage() {
       if (userError) throw userError;
       
       // Check if user settings already exist
-      const { data: existingSettings, error: checkError } = await supabase
+      const { data: existingSettingsArray, error: checkError } = await supabase
         .from("user_settings")
         .select("id")
-        .eq("user_id", userData.id)
-        .single();
+        .eq("user_id", userData.id);
+      
+      const existingSettings = existingSettingsArray && existingSettingsArray.length > 0 ? existingSettingsArray[0] : null;
+      console.log("Existing settings check:", existingSettings, checkError);
       
       let upsertError;
       
       // Ensure we have a valid color mode value
       const validColorModes = ["", "light", "dark"];
-      const validColorMode = validColorModes.includes(colorMode) ? colorMode : "";
+      // If colorMode is null or undefined, use empty string (default)
+      const validColorMode = colorMode !== null && colorMode !== undefined && validColorModes.includes(colorMode) ? colorMode : "";
+      
+      // Ensure we have a valid font size value
+      const validFontSizes = ["small", "medium", "large"];
+      const validFontSize = fontSize !== null && fontSize !== undefined && validFontSizes.includes(fontSize) ? fontSize : "medium";
       
       console.log("Saving color mode to database:", validColorMode || "default");
+      console.log("Saving font size to database:", validFontSize);
       
-      if (!checkError && existingSettings) {
+      if (existingSettings) {
         // Update existing settings
         const { error } = await supabase
           .from("user_settings")
           .update({
             timezone: timezone,
-            color: validColorMode
+            color: validColorMode,
+            font_size: validFontSize
           })
           .eq("user_id", userData.id);
         
@@ -185,7 +252,8 @@ export default function SettingsPage() {
             {
               user_id: userData.id,
               timezone: timezone,
-              color: validColorMode
+              color: validColorMode,
+              font_size: validFontSize
             }
           ]);
         
@@ -197,6 +265,7 @@ export default function SettingsPage() {
       // Also save to localStorage as fallback
       localStorage.setItem("timezone", timezone);
       localStorage.setItem("colorMode", colorMode);
+      localStorage.setItem("fontSize", fontSize);
       
       setSaveMessage("Settings saved successfully!");
     } catch (error) {
@@ -223,15 +292,14 @@ export default function SettingsPage() {
       // Verify password
       const { data: userData, error: userError } = await supabase
         .from("users")
-        .select("password_hash")
+        .select("password")
         .eq("username", username)
         .single();
       
       if (userError) throw userError;
       
       // Check if password is correct
-      const bcrypt = require('bcryptjs');
-      const isPasswordCorrect = await bcrypt.compare(password, userData.password_hash);
+      const isPasswordCorrect = await bcrypt.compare(password, userData.password);
       
       if (!isPasswordCorrect) {
         setEmailUpdateMessage("Incorrect password. Please try again.");
@@ -351,13 +419,12 @@ export default function SettingsPage() {
               <label htmlFor="currentEmail" className="block text-sm font-medium mb-2 text-[var(--text-primary)]">
                 Current Email
               </label>
-              <input
-                type="email"
-                id="currentEmail"
-                value={currentEmail}
-                disabled
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600"
-              />
+              <div className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600 overflow-x-auto whitespace-nowrap">
+                {currentEmail && currentEmail !== "" ? 
+                  currentEmail : 
+                  <span className="text-red-500 font-medium">No email set</span>
+                }
+              </div>
             </div>
             
             <div>
@@ -411,6 +478,60 @@ export default function SettingsPage() {
         </div>
         
         {/* Google Connect Box */}
+        {/* Font Size Settings */}
+        <div className="bg-[var(--bg-secondary)] shadow-lg rounded-lg p-6 mb-6">
+          <h2 className="text-2xl font-semibold mb-4 text-[var(--text-primary)]">
+            Font Size
+          </h2>
+          <p className="mb-4 text-[var(--text-secondary)]">
+            Choose your preferred font size for better readability.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {fontSizes.map((size) => (
+              <div 
+                key={size.value}
+                className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                  fontSize === size.value 
+                    ? "border-[var(--accent-color)] bg-opacity-10 bg-[var(--accent-color)]" 
+                    : "border-gray-300 hover:border-gray-400"
+                }`}
+                onClick={() => setFontSize(size.value)}
+              >
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    id={`size-${size.value}`}
+                    name="fontSize"
+                    value={size.value}
+                    checked={fontSize === size.value}
+                    onChange={() => setFontSize(size.value)}
+                    className="h-4 w-4 text-[var(--accent-color)] focus:ring-[var(--accent-color)] border-gray-300"
+                  />
+                  <label 
+                    htmlFor={`size-${size.value}`}
+                    className={`ml-3 block font-medium text-[var(--text-primary)] ${
+                      size.value === "small" ? "text-sm" : 
+                      size.value === "large" ? "text-lg" : 
+                      "text-base"
+                    }`}
+                  >
+                    {size.label}
+                  </label>
+                </div>
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">{size.description}</p>
+                <div className="mt-3 flex items-center justify-center h-10 rounded border border-[var(--text-secondary)] bg-[var(--bg-primary)]">
+                  <span className={`${
+                    size.value === "small" ? "text-sm" : 
+                    size.value === "large" ? "text-lg" : 
+                    "text-base"
+                  }`}>Sample Text</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="bg-[var(--bg-secondary)] shadow-lg rounded-lg p-6 mb-6">
           <h2 className="text-2xl font-semibold mb-4 text-[var(--text-primary)]">
             Connect with Google
