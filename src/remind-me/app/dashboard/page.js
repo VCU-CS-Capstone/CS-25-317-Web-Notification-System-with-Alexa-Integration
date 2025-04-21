@@ -111,7 +111,7 @@ function DashboardContent() {
     return `${parts[0]}:${parts[1]}`;
   }
 
-  // Format date as MM-DD-YY without timezone conversion
+  // Format date as 'Month Day, Year' (e.g., April 20th, 2025)
   const formatDate = (date) => {
     let d;
     if (typeof date === 'string') {
@@ -128,11 +128,29 @@ function DashboardContent() {
       d = new Date(date);
     }
     
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = String(d.getFullYear()).slice(-2);
+    // Get month name
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthName = months[d.getMonth()];
+    
+    // Get day with ordinal suffix
+    const day = d.getDate();
+    let dayWithSuffix;
+    
+    if (day > 3 && day < 21) {
+      dayWithSuffix = `${day}th`;
+    } else {
+      switch (day % 10) {
+        case 1: dayWithSuffix = `${day}st`; break;
+        case 2: dayWithSuffix = `${day}nd`; break;
+        case 3: dayWithSuffix = `${day}rd`; break;
+        default: dayWithSuffix = `${day}th`;
+      }
+    }
+    
+    // Get full year
+    const year = d.getFullYear();
   
-    return `${month}-${day}-${year}`;
+    return `${monthName} ${dayWithSuffix}, ${year}`;
   };
 
   // Convert date to YYYY-MM-DD format for database queries without timezone issues

@@ -106,26 +106,43 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
     event.preventDefault();
     setLoading(true);
 
+    // Get the event date and times
+    const eventDate = event.target.date.value;
+    const startTime = event.target.startTime.value;
+    const endTime = event.target.endTime.value;
+    
+    // Check if the event is in the past
+    const now = new Date();
+    const eventDateTime = new Date(`${eventDate}T${endTime}:00`);
+    const isPastEvent = eventDateTime < now;
+    
+    console.log('Event date/time:', eventDateTime);
+    console.log('Current date/time:', now);
+    console.log('Is past event:', isPastEvent);
+
     const updatedReminder = {
       event_name: event.target.title.value,
       event_description: event.target.description ? event.target.description.value : '',
-      event_date: event.target.date.value,
-      start_time: event.target.startTime.value,
-      end_time: event.target.endTime.value,
+      event_date: eventDate,
+      start_time: startTime,
+      end_time: endTime,
       interval: event.target.interval.value,
-      userid: userId, 
+      userid: userId,
+      is_complete: isPastEvent, // Automatically mark as complete if in the past
     };
 
     try {
       if (source === 'create'){
+        // For consistency, use the same logic for new reminders
         const newReminder = {
           event_name: event.target.title.value,
           event_description: event.target.description ? event.target.description.value : '',
-          event_date: event.target.date.value,
-          start_time: event.target.startTime.value,
-          end_time: event.target.endTime.value,
+          event_date: eventDate,
+          start_time: startTime,
+          end_time: endTime,
           interval: event.target.interval.value,
-          userid: userId, 
+          userid: userId,
+          is_complete: isPastEvent, // Automatically mark as complete if in the past
         };
         const {data, error} = await supabase
           .from("events")
