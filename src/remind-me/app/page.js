@@ -22,6 +22,7 @@ export default function HomePage() {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [isResetting, setIsResetting] = useState(false);
+  const [colorMode, setColorMode] = useState(""); // Default is high contrast mode
 
   const handleLogin = async () => {
     setErrorMsg("");
@@ -161,11 +162,56 @@ export default function HomePage() {
     }
   };
 
+  // Load color mode preference from localStorage when component mounts
+  useEffect(() => {
+    // Only run on client side
+    if (typeof window !== 'undefined') {
+      const storedColorMode = localStorage.getItem('colorMode');
+      if (storedColorMode) {
+        setColorMode(storedColorMode);
+        
+        // Apply the color mode class to the HTML element
+        document.documentElement.classList.remove('light', 'dark');
+        if (storedColorMode) {
+          document.documentElement.classList.add(storedColorMode);
+        }
+      }
+    }
+  }, []);
+  
+  // Get background based on color mode
+  const getBackgroundStyle = () => {
+    switch (colorMode) {
+      case 'light':
+        return {
+          background: 'linear-gradient(135deg, #f5f5f0 0%, #e8e8e0 100%)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          marginTop: 'calc(-1 * env(safe-area-inset-top))',
+          paddingTop: 'calc(env(safe-area-inset-top) + 3rem)'
+        };
+      case 'dark':
+        return {
+          background: 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          marginTop: 'calc(-1 * env(safe-area-inset-top))',
+          paddingTop: 'calc(env(safe-area-inset-top) + 3rem)'
+        };
+      default: // High contrast mode
+        return {
+          backgroundImage: 'url("/background-1.svg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          marginTop: 'calc(-1 * env(safe-area-inset-top))',
+          paddingTop: 'calc(env(safe-area-inset-top) + 3rem)'
+        };
+    }
+  };
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-[url('/background-1.svg')] bg-cover bg-center bg-no-repeat py-12 px-4 sm:px-6 lg:px-8 pt-[calc(env(safe-area-inset-top)+3rem)]" style={{
-      marginTop: 'calc(-1 * env(safe-area-inset-top))',
-      paddingTop: 'calc(env(safe-area-inset-top) + 3rem)'
-    }}>
+    <main className="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={getBackgroundStyle()}>
       <div className="max-w-4xl w-full space-y-8">
         <div className="text-center">
           <h1 className="mt-6 text-4xl font-extrabold text-[var(--text-primary)] mb-2">
@@ -188,7 +234,7 @@ export default function HomePage() {
                     : "Sign In to Remind Me"}
               </h2>
             </div>
-            <div className="bg-[var(--bg-primary)] py-8 px-6 shadow-lg rounded-lg space-y-6">
+            <div className="bg-[var(--bg-primary)] py-8 px-6 shadow-lg rounded-lg space-y-6 border border-[var(--accent-color)] backdrop-blur-sm">
           {isForgotPassword ? (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>

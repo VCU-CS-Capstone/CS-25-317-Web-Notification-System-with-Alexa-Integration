@@ -1,10 +1,21 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 const MobileShortcutGuide = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [colorMode, setColorMode] = useState("");
+  
+  // Get color mode from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedColorMode = localStorage.getItem('colorMode');
+      if (storedColorMode) {
+        setColorMode(storedColorMode);
+      }
+    }
+  }, []);
   
   const steps = [
     {

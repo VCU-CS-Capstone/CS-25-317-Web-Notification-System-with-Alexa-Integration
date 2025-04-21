@@ -42,6 +42,7 @@ function DashboardContent() {
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [fontSize, setFontSize] = useState('medium'); // Default to medium font size
 
   // Parse date from URL parameter
   useEffect(() => {
@@ -204,6 +205,16 @@ function DashboardContent() {
     }
   };
 
+  // Get font size from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedFontSize = localStorage.getItem('fontSize');
+      if (storedFontSize) {
+        setFontSize(storedFontSize);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (userId) {
       fetchReminders(selectedDate);
@@ -260,7 +271,11 @@ function DashboardContent() {
             <p className="text-center text-[var(--text-secondary)]">Loading reminders...</p>
           )}
           {error && <p className="text-center text-red-500">Error: {error}</p>}
-          <div className="grid place-items-center grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+          <div className={`grid gap-3 pb-20 overflow-x-hidden
+            ${fontSize === 'large' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3' : 
+              fontSize === 'small' ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7' : 
+              'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'}
+          `}>
             {reminders.map((reminder) => (
               <ReminderCard
                 key={reminder.id}

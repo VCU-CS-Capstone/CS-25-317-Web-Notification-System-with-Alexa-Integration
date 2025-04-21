@@ -49,6 +49,18 @@
 }
 
 /* Fix for full-bleed backgrounds */
+
+/* Time format settings */
+[data-time-format="24hour"] input[type="time"] {
+  /* Force 24-hour format display for time inputs */
+  appearance: textfield;
+}
+
+/* Make sure time inputs are consistent in size */
+input[type="time"] {
+  min-height: 40px;
+  padding: 0.5rem;
+}
 body {
   padding: 0;
   margin: 0;

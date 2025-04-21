@@ -180,11 +180,13 @@ function MonthlyViewContent() {
       <div className="flex justify-between items-center mb-8">
         <button 
           onClick={navigateToPreviousMonth}
-          className="p-2 rounded-full hover:bg-[var(--accent-color)] hover:text-[var(--text-on-accent)] transition-colors"
+          className="flex items-center px-3 py-2 rounded-lg hover:bg-[var(--accent-color)] hover:text-[var(--text-on-accent)] transition-colors border border-gray-300"
+          aria-label="Previous Month"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
+          <span className="hidden sm:inline">Previous</span>
         </button>
         
         <h1 className="text-3xl font-bold text-center">
@@ -193,9 +195,11 @@ function MonthlyViewContent() {
         
         <button 
           onClick={navigateToNextMonth}
-          className="p-2 rounded-full hover:bg-[var(--accent-color)] hover:text-[var(--text-on-accent)] transition-colors"
+          className="flex items-center px-3 py-2 rounded-lg hover:bg-[var(--accent-color)] hover:text-[var(--text-on-accent)] transition-colors border border-gray-300"
+          aria-label="Next Month"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <span className="hidden sm:inline">Next</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>

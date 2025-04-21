@@ -1,8 +1,19 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const FeaturesSection = () => {
   const [activeTab, setActiveTab] = useState(0);
+  const [colorMode, setColorMode] = useState("");
+  
+  useEffect(() => {
+    // Only run on client side
+    if (typeof window !== 'undefined') {
+      const storedColorMode = localStorage.getItem('colorMode');
+      if (storedColorMode) {
+        setColorMode(storedColorMode);
+      }
+    }
+  }, []);
   
   const features = [
     {
@@ -28,7 +39,7 @@ const FeaturesSection = () => {
   ];
   
   return (
-    <div className="bg-[var(--bg-secondary)] rounded-lg shadow-lg p-6 mb-6">
+    <div className="bg-[var(--bg-secondary)] rounded-lg shadow-lg p-6 mb-6 border border-[var(--accent-color)] backdrop-blur-sm">
       <h3 className="text-xl font-bold mb-4 text-center text-[var(--text-primary)]">
         Key Features
       </h3>

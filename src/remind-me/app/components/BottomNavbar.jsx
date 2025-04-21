@@ -41,15 +41,22 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, f
     }
 
     try {
+      // Get the description value and ensure it's not undefined
+      const descriptionValue = event.target.description ? event.target.description.value : '';
+      console.log('Description value:', descriptionValue);
+      
       const newReminder = {
         event_name: event.target.title.value,
         event_date: event.target.date.value,
         start_time: event.target.startTime.value,
-        end_time: event.target.endTime.value, // Assuming no end time is provided
+        end_time: event.target.endTime.value,
         interval: event.target.interval.value,
+        event_description: descriptionValue,
         userid: userId,
       };
 
+      console.log('Submitting reminder with data:', newReminder);
+      
       const {data, error } = await supabase
       .from("events")
       .insert([newReminder]);
@@ -85,9 +92,12 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, f
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-[var(--navbar-bg)] shadow-lg text-[var(--navbar-text)]">
         <div className="flex justify-around items-center p-3">
-          <button className="btn btn-outline border-[var(--navbar-text)] hover:bg-blue-800 hover:text-white text-[var(--navbar-text)] px-2 py-1 text-2xl"
+          <button className="btn btn-outline border-[var(--navbar-text)] hover:bg-blue-800 hover:text-white text-[var(--navbar-text)] px-2 py-1 text-2xl flex items-center"
             onClick={handlePrevDay}
           >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
             Prev
           </button>
           <button
@@ -96,10 +106,13 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, f
           >
             Create
           </button>
-          <button className="btn btn-outline border-[var(--navbar-text)] hover:bg-blue-800 hover:text-white text-[var(--navbar-text)] px-1 py-1 text-2xl"
+          <button className="btn btn-outline border-[var(--navbar-text)] hover:bg-blue-800 hover:text-white text-[var(--navbar-text)] px-1 py-1 text-2xl flex items-center"
             onClick={handleNextDay}
           >
             Next
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
       </div>

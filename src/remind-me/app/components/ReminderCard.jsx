@@ -22,6 +22,16 @@ const formatDate = (date) => {
 };
 
 export const ReminderCard = ({ title, event_description, startTime, date, is_complete, onClick}) => {
+  // State for font size
+  const [fontSize, setFontSize] = useState('medium');  
+  
+  // Get font size from localStorage
+  useEffect(() => {
+    const storedFontSize = localStorage.getItem('fontSize');
+    if (storedFontSize) {
+      setFontSize(storedFontSize);
+    }
+  }, []);
   // Parse date parts directly to avoid timezone issues
   let reminderDateTime;
   
@@ -76,6 +86,31 @@ export const ReminderCard = ({ title, event_description, startTime, date, is_com
     return () => observer.disconnect();
   }, []);
 
+  // Format time to be more readable based on user preference
+  const formatTime = (timeString) => {
+    if (!timeString) return '';
+    
+    try {
+      // Check user's time format preference from localStorage
+      const timeFormat = localStorage.getItem('timeFormat') || '12hour';
+      const [hours, minutes] = timeString.split(':');
+      const h = parseInt(hours, 10);
+      
+      if (timeFormat === '24hour') {
+        // 24-hour format (military time)
+        return `${hours.padStart(2, '0')}:${minutes}`;
+      } else {
+        // 12-hour format with AM/PM
+        const period = h >= 12 ? 'PM' : 'AM';
+        const hour = h % 12 || 12; // Convert 0 to 12 for 12 AM
+        return `${hour}:${minutes} ${period}`;
+      }
+    } catch (e) {
+      console.error('Error formatting time:', e);
+      return timeString;
+    }
+  };
+
   return (
     <div
       onClick={onClick}
@@ -83,27 +118,40 @@ export const ReminderCard = ({ title, event_description, startTime, date, is_com
         ${isPast 
           ? 'bg-gray-700' // Darker gray for past-time cards
           : isHighContrast 
-            ? 'bg-blue-400' // Much brighter blue color for high contrast mode
+            ? 'bg-blue-600' // Darker blue for better contrast in high contrast mode
             : 'bg-[var(--bg-secondary)]'
         }
-        p-3 shadow-lg rounded-2xl cursor-pointer 
-        hover:scale-105 transition-transform duration-300 ease-in-out 
-        flex flex-row items-center justify-between
-        sm:flex-col sm:items-start sm:justify-between 
-        w-full sm:w-60 sm:h-60 
-        mb-4 ml-4 mr-4
+        ${fontSize === 'large' ? 'p-3' : fontSize === 'small' ? 'p-2' : 'p-2.5'} 
+        shadow-md border-2 rounded-lg cursor-pointer 
+        hover:shadow-lg transition-all duration-200 ease-in-out 
+        flex flex-col justify-between
+        w-full max-w-full overflow-hidden
+        ${fontSize === 'large' ? 'aspect-square' : fontSize === 'small' ? 'aspect-[4/3]' : 'aspect-[4/3]'}
+        mb-3 mx-auto
+        ${isHighContrast ? 'border-black' : 'border-[var(--accent-color)]'} 
       `}
     >
-      <div className="flex-1 sm:w-full overflow-hidden">
-        <h2 className={`text-2xl font-semibold ${statusTextColor} truncate`}>{title}</h2>
-        <p className={`sm:block text-lg font-semibold mt-1 ${isPast || isHighContrast ? 'text-white' : 'text-[var(--text-secondary)]'} line-clamp-2`}>{event_description}</p>
+      {/* Title and status indicator */}
+      <div className="flex items-center justify-between w-full mb-2">
+        <h2 className={`${fontSize === 'large' ? 'text-2xl' : fontSize === 'small' ? 'text-lg' : 'text-xl'} font-bold ${statusTextColor} truncate max-w-[80%]`}>{title}</h2>
+        <div className={`w-3 h-3 rounded-full ${is_complete ? 'bg-green-500' : isPast ? 'bg-red-500' : 'bg-blue-400'}`}></div>
       </div>
+      
+      {/* Description */}
+      <p className={`${fontSize === 'large' ? 'text-lg' : fontSize === 'small' ? 'text-sm' : 'text-base'} font-medium mb-3 ${isPast ? 'text-white' : isHighContrast ? 'text-yellow-300' : 'text-[var(--text-secondary)]'} line-clamp-2 ${fontSize === 'large' ? 'min-h-[3.5rem]' : fontSize === 'small' ? 'min-h-[2rem]' : 'min-h-[2.5rem]'}`}>
+        {event_description || "No description"}
+      </p>
 
-      {/* Right section: Date and Time */}
-      <div className={`text-right text-base sm:text-left mt-0 sm:mt-auto sm:pt-4 ${isPast || isHighContrast ? 'text-white' : 'text-[var(--text-secondary)]'}`}>
-        <p className={`text-xl sm:text-xl font-medium whitespace-nowrap`}>
-          {formatDate(date)} at {startTime}
-        </p>
+      {/* Date and Time */}
+      <div className="mt-auto pt-2 border-t border-gray-500 w-full">
+        <div className="flex justify-between items-center">
+          <p className={`${fontSize === 'large' ? 'text-base' : fontSize === 'small' ? 'text-xs' : 'text-sm'} font-medium ${isPast ? 'text-white' : isHighContrast ? 'text-yellow-300' : 'text-[var(--text-secondary)]'}`}>
+            {formatDate(date)}
+          </p>
+          <p className={`${fontSize === 'large' ? 'text-base' : fontSize === 'small' ? 'text-xs' : 'text-sm'} font-medium ${isPast ? 'text-white' : isHighContrast ? 'text-yellow-300' : 'text-[var(--text-secondary)]'}`}>
+            {formatTime(startTime)}
+          </p>
+        </div>
       </div>
     </div>
   );

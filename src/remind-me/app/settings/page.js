@@ -9,10 +9,14 @@ export default function SettingsPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [timezone, setTimezone] = useState("America/New_York");
+  const [timeFormat, setTimeFormat] = useState("12hour"); // Default to 12-hour time format
   const [colorMode, setColorMode] = useState(""); // Default is empty, will be set to root (high contrast) in useEffect
   const [fontSize, setFontSize] = useState("medium"); // Default font size
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  
+  // Notification settings
+  const [notificationEnabled, setNotificationEnabled] = useState(true);
   
   // Email settings
   const [currentEmail, setCurrentEmail] = useState("");
@@ -132,7 +136,14 @@ export default function SettingsPage() {
             // Set font size from database
             if (userSettings.font_size) {
               setFontSize(userSettings.font_size);
-              localStorage.setItem("fontSize", userSettings.font_size);
+            }
+            
+            if (userSettings.time_type) {
+              setTimeFormat(userSettings.time_type);
+            }
+            
+            if (userSettings.notifications_enabled !== undefined && userSettings.notifications_enabled !== null) {
+              setNotificationEnabled(userSettings.notifications_enabled);
             }
           } else {
             // If no settings found, use defaults or localStorage as fallback
@@ -194,6 +205,14 @@ export default function SettingsPage() {
     // Save to localStorage
     localStorage.setItem("fontSize", fontSize);
   }, [fontSize]);
+  
+  // Save time format to localStorage when it changes
+  useEffect(() => {
+    if (!timeFormat) return;
+    
+    // Save to localStorage
+    localStorage.setItem("timeFormat", timeFormat);
+  }, [timeFormat]);
 
   const saveSettings = async () => {
     setIsSaving(true);
@@ -234,16 +253,18 @@ export default function SettingsPage() {
       
       if (existingSettings) {
         // Update existing settings
-        const { error } = await supabase
+        const { error: updateError } = await supabase
           .from("user_settings")
           .update({
             timezone: timezone,
             color: validColorMode,
-            font_size: validFontSize
+            font_size: validFontSize,
+            time_type: timeFormat,
+            notifications_enabled: notificationEnabled
           })
           .eq("user_id", userData.id);
         
-        upsertError = error;
+        upsertError = updateError;
       } else {
         // Insert new settings
         const { error } = await supabase
@@ -625,6 +646,99 @@ export default function SettingsPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Time Format Settings */}
+        <div className="mb-8">
+          <h3 className="text-xl font-medium mb-3 text-[var(--text-primary)]">
+            Time Format
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div 
+              className={`border rounded-lg p-4 cursor-pointer transition-all ${timeFormat === '12hour' ? 'border-[var(--accent-color)] bg-opacity-10 bg-[var(--accent-color)]' : 'border-gray-300 hover:border-gray-400'}`}
+              onClick={() => setTimeFormat('12hour')}
+            >
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="time-12hour"
+                  name="timeFormat"
+                  value="12hour"
+                  checked={timeFormat === '12hour'}
+                  onChange={() => setTimeFormat('12hour')}
+                  className="h-4 w-4 text-[var(--accent-color)] focus:ring-[var(--accent-color)] border-gray-300"
+                />
+                <label htmlFor="time-12hour" className="ml-3 block font-medium text-[var(--text-primary)]">
+                  12-Hour (AM/PM)
+                </label>
+              </div>
+              <p className="mt-2 text-center text-[var(--text-primary)]">3:30 PM</p>
+            </div>
+            
+            <div 
+              className={`border rounded-lg p-4 cursor-pointer transition-all ${timeFormat === '24hour' ? 'border-[var(--accent-color)] bg-opacity-10 bg-[var(--accent-color)]' : 'border-gray-300 hover:border-gray-400'}`}
+              onClick={() => setTimeFormat('24hour')}
+            >
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="time-24hour"
+                  name="timeFormat"
+                  value="24hour"
+                  checked={timeFormat === '24hour'}
+                  onChange={() => setTimeFormat('24hour')}
+                  className="h-4 w-4 text-[var(--accent-color)] focus:ring-[var(--accent-color)] border-gray-300"
+                />
+                <label htmlFor="time-24hour" className="ml-3 block font-medium text-[var(--text-primary)]">
+                  24-Hour (Military)
+                </label>
+              </div>
+              <p className="mt-2 text-center text-[var(--text-primary)]">15:30</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Notification Settings */}
+        <div className="mb-8">
+          <h3 className="text-xl font-medium mb-3 text-[var(--text-primary)]">
+            Notification Settings
+          </h3>
+          <div className="flex items-center justify-between p-4 border rounded-lg bg-[var(--bg-primary)]">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-[var(--accent-color)] bg-opacity-20">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[var(--accent-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <div>
+                <label htmlFor="notification-toggle" className="block text-lg font-medium text-[var(--text-primary)]">
+                  Enable Notifications
+                </label>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  {notificationEnabled 
+                    ? "Notifications are currently enabled" 
+                    : "Notifications are currently disabled"}
+                </p>
+              </div>
+            </div>
+            <div className="relative inline-block w-14 h-7 transition duration-200 ease-in-out rounded-full">
+              <input 
+                type="checkbox" 
+                id="notification-toggle" 
+                className="absolute w-7 h-7 opacity-0 cursor-pointer z-10" 
+                checked={notificationEnabled}
+                onChange={(e) => setNotificationEnabled(e.target.checked)}
+              />
+              <label 
+                htmlFor="notification-toggle" 
+                className={`block h-7 overflow-hidden rounded-full cursor-pointer border ${notificationEnabled ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-gray-200 border-gray-300'}`}
+              >
+                <span 
+                  className={`block h-7 w-7 rounded-full transform transition-transform duration-200 ease-in-out bg-white shadow-md ${notificationEnabled ? 'translate-x-7' : 'translate-x-0'}`} 
+                />
+              </label>
+            </div>
           </div>
         </div>
         
