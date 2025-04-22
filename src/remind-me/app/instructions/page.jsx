@@ -1,15 +1,27 @@
+'use client';
 import React from 'react';
+import YouTube from 'react-youtube';
 //import YouTube from 'react-youtube'; // to be used when embedding the vidoes if we publish on the capstone youtube
 import CollapsibleInstruction from '../components/CollapsibleInstruction'; // Adjust the path if necessary
 
 const page = () => {
   return (
-    <div className="p-6 space-y-4">
+    <div className="min-h-screen p-6 space-y-4">
       <h1 className="text-3xl font-bold text-center mb-6">Instructions</h1>
       
       <CollapsibleInstruction title="Using Alexa">
         <div>
-          <h3 className="text-2xl font-semibold">Alexa Setup</h3>
+          <h3 className="text-2xl font-semibold">Alexa Interactions</h3>
+          <YouTube
+            videoId="3VOHG9LQXkU" // Replace with your actual video ID
+            opts={{
+              width: '100%',
+              height: '390',
+              playerVars: {
+                autoplay: 0,
+              },
+            }}
+          />
           <p>
             Alexa is set up so that if she hears a phrase that doesn't exactly match what she expects, she will try to infer the best option.
           </p>
