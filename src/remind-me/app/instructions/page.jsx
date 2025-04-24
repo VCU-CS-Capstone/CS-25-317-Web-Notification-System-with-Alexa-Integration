@@ -13,7 +13,7 @@ const page = () => {
         <div>
           <h3 className="text-2xl font-semibold">Alexa Interactions</h3>
           <YouTube
-            videoId="3VOHG9LQXkU" // Replace with your actual video ID
+            videoId="3VOHG9LQXkU" 
             opts={{
               width: '100%',
               height: '390',
@@ -159,6 +159,16 @@ const page = () => {
       <CollapsibleInstruction title="Setting up Fitbit Watch">
         <div>
           <h3 className="text-2xl font-semibold">Fitbit Setup Overview</h3>
+          <YouTube
+            videoId="AHuP79As7aM" 
+            opts={{
+              width: '100%',
+              height: '390',
+              playerVars: {
+                autoplay: 0,
+              },
+            }}
+          />
           <p>
             First, download the Fitbit mobile app and create an account. Since our project uses a Google account, we’ll be signing in with that. You’ll need access to the <strong>cscapstoneqlplus25@gmail.com</strong> credentials to proceed.
           </p>
