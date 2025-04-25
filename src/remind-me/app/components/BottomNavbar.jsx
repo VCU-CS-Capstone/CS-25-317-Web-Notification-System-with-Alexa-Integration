@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReminderPopup from "./ReminderPopup"; 
 import { supabase } from "../lib/supabaseClient";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, fetchReminders, selectedReminder}) => {
@@ -105,43 +106,71 @@ const BottomNavbar = ({reminders, setReminders, selectedDate, setSelectedDate, f
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-[var(--navbar-bg)] shadow-lg text-[var(--navbar-text)]">
+      <motion.div 
+        className="fixed bottom-0 left-0 right-0 bg-[var(--navbar-bg)] shadow-lg text-[var(--navbar-text)]"
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", damping: 20, stiffness: 100 }}
+      >
         <div className="flex justify-around items-center p-3">
-          <button className="btn btn-outline border-[var(--navbar-text)] hover:bg-blue-800 hover:text-white text-[var(--navbar-text)] px-2 py-1 text-2xl flex items-center"
+          <motion.button 
+            className="btn btn-outline border-[var(--navbar-text)] hover:bg-blue-800 hover:text-white text-[var(--navbar-text)] px-2 py-1 text-2xl flex items-center"
             onClick={handlePrevDay}
+            whileHover={{ scale: 1.05, x: -3 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <motion.div
+              animate={{ x: [0, -4, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </motion.div>
             Prev
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             className="btn bg-[var(--bg-secondary)] px-3 py-1 text-2xl hover:bg-blue-800 text-[var(--text-primary)]"
             onClick={handleCreateClick}
+            whileHover={{ scale: 1.1, backgroundColor: "var(--accent-color)" }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             Create
-          </button>
-          <button className="btn btn-outline border-[var(--navbar-text)] hover:bg-blue-800 hover:text-white text-[var(--navbar-text)] px-1 py-1 text-2xl flex items-center"
+          </motion.button>
+          <motion.button 
+            className="btn btn-outline border-[var(--navbar-text)] hover:bg-blue-800 hover:text-white text-[var(--navbar-text)] px-1 py-1 text-2xl flex items-center"
             onClick={handleNextDay}
+            whileHover={{ scale: 1.05, x: 3 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             Next
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+            <motion.div
+              animate={{ x: [0, 4, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </motion.div>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      {isFormOpen && (
-        <ReminderPopup
-          source="create"
-          closeForm={closeForm}
-          loading={loading}
-          handleFormSubmit={handleFormSubmit}
-          selectedDate={selectedDate}
-          selectedReminder={selectedReminder}
-        />
-      )}
+      <AnimatePresence>
+        {isFormOpen && (
+          <ReminderPopup
+            source="create"
+            closeForm={closeForm}
+            loading={loading}
+            handleFormSubmit={handleFormSubmit}
+            selectedDate={selectedDate}
+            selectedReminder={selectedReminder}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 };

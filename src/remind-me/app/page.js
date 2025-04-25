@@ -293,9 +293,9 @@ export default function HomePage() {
               </h2>
             </motion.div>
             <motion.div 
-              className="bg-[var(--bg-primary)] py-8 px-6 shadow-lg rounded-lg space-y-6 border border-[var(--accent-color)] backdrop-blur-sm"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
+              className="bg-[var(--bg-primary)] py-8 px-6 shadow-lg rounded-lg space-y-6 border border-[var(--accent-color)] backdrop-blur-sm overflow-hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.4 }}
             >
           {isForgotPassword ? (
@@ -323,8 +323,7 @@ export default function HomePage() {
               <motion.button
                 type="submit"
                 disabled={isResetting}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ backgroundColor: "var(--accent-color-hover)" }}
                 className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-[var(--text-on-accent)] bg-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-color)]"
               >
                 {isResetting ? "Sending..." : "Send Reset Instructions"}
@@ -345,7 +344,7 @@ export default function HomePage() {
                     setErrorMsg("");
                     setSuccessMsg("");
                   }}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ textDecoration: "underline" }}
                   className="text-blue-600 hover:underline focus:outline-none"
                 >
                   Back to Sign In
@@ -409,8 +408,7 @@ export default function HomePage() {
             
               <motion.button
                 type="submit"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ backgroundColor: "var(--accent-color-hover)" }}
                 className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-[var(--text-on-accent)] bg-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-color)]"
               >
                 {isSignUp ? "Sign Up" : "Sign In"}
@@ -441,7 +439,7 @@ export default function HomePage() {
                         setIsForgotPassword(true);
                         setErrorMsg("");
                       }}
-                      whileHover={{ scale: 1.05 }}
+                      whileHover={{ textDecoration: "underline" }}
                       className="text-blue-600 hover:underline focus:outline-none"
                     >
                       Forgot your password?
