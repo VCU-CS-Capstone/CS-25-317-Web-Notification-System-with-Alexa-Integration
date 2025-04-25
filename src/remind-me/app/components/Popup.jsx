@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReminderPopup from "./ReminderPopup"; 
 import { supabase } from "../lib/supabaseClient";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) => {
@@ -11,28 +12,21 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
   
   // Function to check if a reminder is past due
   const isPastDue = () => {
-    if (!date || !endTime) return false;
+    if (!date || !startTime) return false; // Use startTime to match ReminderCard logic
     
     try {
       const now = new Date();
       
-      // Parse the date and time correctly
+      // Parse the date and time correctly (identical to ReminderCard component)
       const [year, month, day] = date.split('-').map(Number);
-      const [hours, minutes] = endTime.split(':').map(Number);
+      const [hours, minutes] = startTime.split(':').map(Number); // Use startTime for consistency
       
-      // Create date object with local timezone
-      const reminderEndDate = new Date(year, month - 1, day, hours, minutes);
+      // Create date object with local timezone (exactly matching ReminderCard)
+      const reminderDateTime = new Date(year, month - 1, day, hours, minutes);
       
-      // For today's reminders, check if the end time has passed
-      if (now.toDateString() === reminderEndDate.toDateString()) {
-        // Same day - compare only the time
-        const nowTime = now.getHours() * 60 + now.getMinutes();
-        const reminderTime = hours * 60 + minutes;
-        return nowTime > reminderTime;
-      }
-      
-      // For other days, compare the full dates
-      return now > reminderEndDate;
+      // Simple comparison - if the current time is past the reminder time, it's past due
+      // This exactly matches the logic in ReminderCard.jsx
+      return now > reminderDateTime;
     } catch (e) {
       console.error('Error checking if reminder is past due:', e);
       return false;
@@ -111,13 +105,21 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
     const startTime = event.target.startTime.value;
     const endTime = event.target.endTime.value;
     
-    // Check if the event is in the past
+    // Check if the event is in the past - use consistent timezone handling
     const now = new Date();
-    const eventDateTime = new Date(`${eventDate}T${endTime}:00`);
+    
+    // Create date parts for accurate comparison without timezone issues
+    const [year, month, day] = eventDate.split('-').map(num => parseInt(num, 10));
+    const [hours, minutes] = endTime.split(':').map(num => parseInt(num, 10));
+    
+    // Use local timezone consistently
+    const eventDateTime = new Date(year, month - 1, day, hours, minutes);
+    
+    // Determine if the event is already past
     const isPastEvent = eventDateTime < now;
     
-    console.log('Event date/time:', eventDateTime);
-    console.log('Current date/time:', now);
+    console.log('Event date/time:', eventDateTime.toLocaleString());
+    console.log('Current date/time:', now.toLocaleString());
     console.log('Is past event:', isPastEvent);
 
     const updatedReminder = {
@@ -128,7 +130,7 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
       end_time: endTime,
       interval: event.target.interval.value,
       userid: userId,
-      is_complete: isPastEvent, // Automatically mark as complete if in the past
+      is_complete: false, // Always start as active for better user experience
     };
 
     try {
@@ -142,7 +144,7 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
           end_time: endTime,
           interval: event.target.interval.value,
           userid: userId,
-          is_complete: isPastEvent, // Automatically mark as complete if in the past
+          is_complete: false, // Always start as active for better user experience
         };
         const {data, error} = await supabase
           .from("events")
@@ -219,8 +221,20 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 p-4 backdrop-blur-sm overflow-y-auto">
-      <div className={`p-5 rounded-2xl shadow-lg max-w-md w-full ${isHighContrast ? 'bg-blue-600 border-2 border-black' : 'bg-[var(--bg-secondary)]'} font-semibold`}>
+    <motion.div 
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 p-4 z-50 backdrop-blur-sm overflow-y-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <motion.div 
+        className={`${isHighContrast ? 'bg-blue-600 border-2 border-black' : 'bg-[var(--bg-secondary)]'} p-5 rounded-lg shadow-lg w-full max-w-xl mx-auto`}
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
         {/* Header with title and date */}
         <div className="border-b border-gray-500 pb-3 mb-4">
           <h2 className={`text-2xl font-bold ${isHighContrast ? 'text-yellow-300' : 'text-[var(--text-primary)]'} mb-1`}>
@@ -230,8 +244,11 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
             <p className={`text-sm ${isHighContrast ? 'text-yellow-300' : 'text-[var(--text-primary)]'}`}>
               {formatDate(date)}
             </p>
-            <div className={`px-2 py-1 rounded text-xs ${is_complete ? 'bg-green-500 text-white' : isPastDue() ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
-              {is_complete ? "Completed" : isPastDue() ? "Incomplete" : "Active"}
+            <div className="flex items-center">
+              <span className={`text-xs mr-2 px-1.5 py-0.5 rounded font-medium ${is_complete ? 'bg-green-500 text-white' : isPastDue() ? 'bg-red-500 text-white' : 'bg-blue-400 text-white'}`}>
+                {is_complete ? 'Complete' : isPastDue() ? 'Incomplete' : 'Active'}
+              </span>
+              <div className={`w-3 h-3 rounded-full ${is_complete ? 'bg-green-500' : isPastDue() ? 'bg-red-500' : 'bg-blue-400'}`}></div>
             </div>
           </div>
         </div>
@@ -282,7 +299,11 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
           </button>
           <button
             className={`px-3 py-2 rounded-md ${isHighContrast ? 'bg-red-600 text-white' : 'bg-[var(--cancel-color)] text-[var(--text-on-cancel)]'} text-base hover:${isHighContrast ? 'bg-red-700' : 'bg-[var(--cancel-color-hover)]'} transition-colors border ${isHighContrast ? 'border-black' : 'border-transparent'}`}
-            onClick={handleDelete}
+            onClick={() => {
+              if (window.confirm('Are you sure you want to delete this reminder?')) {
+                handleDelete();
+              }
+            }}
           >
             Delete
           </button>
@@ -293,19 +314,21 @@ const Popup = ({ selectedReminder, closePopup, handleDelete, fetchReminders }) =
             Close
           </button>
         </div>
-      </div>
+      </motion.div>
 
-      {isFormOpen && (
-      <ReminderPopup
-        source="edit"
-        closeForm={closeForm}
-        loading={loading}
-        handleFormSubmit={handleFormSubmit}
-        selectedDate={date}
-        selectedReminder={selectedReminder}
-      />
-    )}
-    </div>
+      <AnimatePresence>
+        {isFormOpen && (
+        <ReminderPopup
+          source="edit"
+          closeForm={closeForm}
+          loading={loading}
+          handleFormSubmit={handleFormSubmit}
+          selectedDate={date}
+          selectedReminder={selectedReminder}
+        />
+      )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

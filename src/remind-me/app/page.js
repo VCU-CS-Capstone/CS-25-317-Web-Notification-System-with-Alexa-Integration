@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "./lib/supabaseClient";
 import bcrypt from "bcryptjs";
 import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Dynamically import components to improve initial load time
 const FeaturesSection = dynamic(() => import("./components/FeaturesSection"));
@@ -24,16 +25,25 @@ export default function HomePage() {
   const [isResetting, setIsResetting] = useState(false);
   const [colorMode, setColorMode] = useState(""); // Default is high contrast mode
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    if (e) e.preventDefault();
     setErrorMsg("");
 
-    const { data: user, error } = await supabase
+    // Make username search case-insensitive
+    // Using a more compatible approach for case-insensitive matching
+    const { data: users, error: usersError } = await supabase
       .from("users")
-      .select("*")
-      .eq("username", username)
-      .single();
-
-    if (error || !user) {
+      .select("*");
+      
+    if (usersError) {
+      setErrorMsg("Error connecting to database. Please try again.");
+      return;
+    }
+    
+    // Manually filter for case-insensitive username match
+    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    
+    if (!user) {
       setErrorMsg("Invalid username or password");
       return;
     }
@@ -49,20 +59,36 @@ export default function HomePage() {
     router.push("/dashboard");
   };
 
-  const handleSignUp = async () => {
+  const handleSignUp = async (e) => {
+    if (e) e.preventDefault();
     setErrorMsg("");
+    setSuccessMsg("");
 
-    const { data: existingUser } = await supabase
+    // Validate inputs
+    if (!username || !password || !email) {
+      setErrorMsg("Please fill in all required fields");
+      return;
+    }
+
+    // Check if username already exists (case-insensitive)
+    const { data: allUsers, error: searchError } = await supabase
       .from("users")
-      .select("*")
-      .eq("username", username)
-      .single();
+      .select("*");
+      
+    if (searchError) {
+      setErrorMsg("Error connecting to database. Please try again.");
+      return;
+    }
+    
+    // Manually check for case-insensitive match
+    const existingUser = allUsers.find(u => u.username.toLowerCase() === username.toLowerCase());
 
     if (existingUser) {
       setErrorMsg("Username already taken");
       return;
     }
 
+    // Hash password and create user
     const hashedPassword = bcrypt.hashSync(password, 10);
 
     const { error } = await supabase
@@ -70,11 +96,19 @@ export default function HomePage() {
       .insert([{ username, password: hashedPassword, email, role: "user" }]);
 
     if (error) {
+      console.error("Signup error:", error);
       setErrorMsg("Error signing up. Please try again.");
       return;
     }
 
-    router.push("/dashboard");
+    // Clear form fields
+    setUsername("");
+    setPassword("");
+    setEmail("");
+    
+    // Set success message and switch to login view
+    setSuccessMsg("Account created successfully! Please log in.");
+    setIsSignUp(false);
   };
   
   const handleResetPassword = async (e) => {
@@ -162,6 +196,26 @@ export default function HomePage() {
     }
   };
 
+  // Add keyboard event listener for Enter key on forms
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'Enter') {
+        if (isForgotPassword) {
+          handleResetPassword(e);
+        } else if (isSignUp) {
+          handleSignUp(e);
+        } else {
+          handleLogin(e);
+        }
+      }
+    };
+    
+    document.addEventListener('keypress', handleKeyPress);
+    return () => {
+      document.removeEventListener('keypress', handleKeyPress);
+    };
+  }, [isForgotPassword, isSignUp]);
+  
   // Load color mode preference from localStorage when component mounts
   useEffect(() => {
     // Only run on client side
@@ -225,7 +279,11 @@ export default function HomePage() {
         <div className="flex flex-col md:flex-row gap-6">
           {/* Left column: Login form */}
           <div className="md:w-1/2 space-y-6">
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <h2 className="text-center text-2xl font-bold text-[var(--text-primary)]">
                 {isForgotPassword 
                   ? "Reset Your Password" 
@@ -233,10 +291,19 @@ export default function HomePage() {
                     ? "Sign Up for Remind Me" 
                     : "Sign In to Remind Me"}
               </h2>
-            </div>
-            <div className="bg-[var(--bg-primary)] py-8 px-6 shadow-lg rounded-lg space-y-6 border border-[var(--accent-color)] backdrop-blur-sm">
+            </motion.div>
+            <motion.div 
+              className="bg-[var(--bg-primary)] py-8 px-6 shadow-lg rounded-lg space-y-6 border border-[var(--accent-color)] backdrop-blur-sm"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+            >
           {isForgotPassword ? (
-            <form onSubmit={handleResetPassword} className="space-y-4">
+            <motion.form onSubmit={handleResetPassword} className="space-y-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
               <div>
                 <label htmlFor="resetEmail" className="block text-sm font-medium text-[var(--text-secondary)]">
                   Email Address
@@ -253,13 +320,15 @@ export default function HomePage() {
                 />
               </div>
               
-              <button
+              <motion.button
                 type="submit"
                 disabled={isResetting}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-[var(--text-on-accent)] bg-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-color)]"
               >
                 {isResetting ? "Sending..." : "Send Reset Instructions"}
-              </button>
+              </motion.button>
               
               {errorMsg && (
                 <p className="text-red-500 text-sm text-center">{errorMsg}</p>
@@ -270,20 +339,21 @@ export default function HomePage() {
               )}
               
               <p className="text-sm text-center text-[var(--text-secondary)]">
-                <button
+                <motion.button
                   onClick={() => {
                     setIsForgotPassword(false);
                     setErrorMsg("");
                     setSuccessMsg("");
                   }}
+                  whileHover={{ scale: 1.05 }}
                   className="text-blue-600 hover:underline focus:outline-none"
                 >
                   Back to Sign In
-                </button>
+                </motion.button>
               </p>
-            </form>
+            </motion.form>
           ) : (
-            <div className="space-y-4">
+            <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-4">
               {isSignUp && (
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-[var(--text-secondary)]">
@@ -337,12 +407,14 @@ export default function HomePage() {
                 />
               </div>
             
-              <button
-                onClick={isSignUp ? handleSignUp : handleLogin}
+              <motion.button
+                type="submit"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-[var(--text-on-accent)] bg-[var(--accent-color)] hover:bg-[var(--accent-color-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-color)]"
               >
                 {isSignUp ? "Sign Up" : "Sign In"}
-              </button>
+              </motion.button>
 
               {errorMsg && (
                 <p className="text-red-500 text-sm text-center">{errorMsg}</p>
@@ -364,21 +436,22 @@ export default function HomePage() {
                 
                 {!isSignUp && (
                   <p className="text-sm text-center text-[var(--text-secondary)]">
-                    <button
+                    <motion.button
                       onClick={() => {
                         setIsForgotPassword(true);
                         setErrorMsg("");
                       }}
+                      whileHover={{ scale: 1.05 }}
                       className="text-blue-600 hover:underline focus:outline-none"
                     >
                       Forgot your password?
-                    </button>
+                    </motion.button>
                   </p>
                 )}
               </div>
-            </div>
+            </form>
           )}
-            </div>
+            </motion.div>
             
             {/* Mobile Shortcut Guide */}
             <div className="mt-4">

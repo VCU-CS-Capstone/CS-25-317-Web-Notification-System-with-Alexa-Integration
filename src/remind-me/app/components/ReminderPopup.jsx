@@ -48,14 +48,33 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
   }, []);
 
   const formatDateForInput = (dateObj) => {
+    // Handle different date input formats
     let date;
+    
     if (typeof dateObj === "string") {
-      const [year, month, day] = dateObj.split("-");
-      date = new Date(year, month - 1, day);
-    } else {
+      // If it's already in YYYY-MM-DD format, parse it without timezone issues
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateObj)) {
+        const [year, month, day] = dateObj.split("-").map(num => parseInt(num, 10));
+        // Create local date without using UTC to prevent timezone issues
+        date = new Date(year, month - 1, day);
+      } else {
+        // For other string formats, try to parse normally
+        date = new Date(dateObj);
+      }
+    } else if (dateObj instanceof Date) {
       date = new Date(dateObj);
+    } else {
+      // Default to today
+      date = new Date();
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.error("Invalid date for formatting:", dateObj);
+      date = new Date(); // Fallback to today
     }
   
+    // Format as YYYY-MM-DD without timezone issues
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
@@ -91,12 +110,23 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
   }, []);
 
   const [dateState, setDateState] = useState(() => {
-    if (source === 'create') return selectedDate;
-    if (source === 'edit') {
-      const [year, month, day] = selectedDate.split("-");
-      const d = new Date(year, month - 1, day);
-      return d;
+    if (source === 'create') {
+      // For create mode, use the selected date
+      if (selectedDate instanceof Date) {
+        return selectedDate;
+      } else if (typeof selectedDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
+        // Parse YYYY-MM-DD format without timezone issues
+        const [year, month, day] = selectedDate.split("-").map(num => parseInt(num, 10));
+        // Use local date (not UTC) to prevent date shifting
+        return new Date(year, month - 1, day);
+      }
+    } else if (source === 'edit' && typeof selectedDate === 'string') {
+      // For edit mode with string date
+      const [year, month, day] = selectedDate.split("-").map(num => parseInt(num, 10));
+      // Use local date constructor to prevent timezone issues
+      return new Date(year, month - 1, day);
     }
+    // Default to today
     return new Date();
   });
 
@@ -140,7 +170,7 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
         <h3 className={`text-2xl ${isHighContrast ? 'text-yellow-300' : 'text-[var(--text-primary)]'} font-bold mb-4`}>
           {source === "edit" ? "Edit a Reminder" : "Create a Reminder"}
         </h3>
-        <form onSubmit={(e) => handleFormSubmit(e, source, selectedDate, id)} className="space-y-4" lang="en-GB">
+        <form onSubmit={(e) => handleFormSubmit(e, source, formatDateForInput(dateState), id)} className="space-y-4" lang="en-GB">
           {/* Main form layout - responsive grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Left column - always visible */}
@@ -191,7 +221,13 @@ const ReminderPopup = ({ closeForm, loading, handleFormSubmit, selectedDate, sou
                   type="date"
                   name="date"
                   value={formatDateForInput(dateState)}
-                  onChange={(e) => setDateState(new Date(e.target.value))}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      const [year, month, day] = e.target.value.split('-').map(Number);
+                      // Create a date object using local time to avoid timezone issues
+                      setDateState(new Date(year, month - 1, day));
+                    }
+                  }}
                   required
                   className="w-full border rounded p-2 bg-white text-black text-base h-10"
                 />

@@ -3,8 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import bcrypt from "bcryptjs";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSettings } from "../contexts/SettingsContext";
 
 // Import settings components
 import TimezoneSettings from "../components/settings/TimezoneSettings";
@@ -20,22 +18,9 @@ export default function SettingsPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [timezone, setTimezone] = useState("America/New_York");
-  
-  // Use the global settings context to prevent resetting to defaults
-  const { 
-    fontSize, updateFontSize, 
-    timeFormat, updateTimeFormat, 
-    isDarkMode, isHighContrast, updateColorMode, 
-    isClient 
-  } = useSettings();
-  
-  // Convert the isDarkMode/isHighContrast values to the colorMode string
-  const [colorMode, setColorMode] = useState(() => {
-    if (isHighContrast) return "";
-    if (isDarkMode) return "dark";
-    return "light";
-  });
-  
+  const [timeFormat, setTimeFormat] = useState("12hour"); // Default to 12-hour time format
+  const [colorMode, setColorMode] = useState(""); // Default is empty, will be set to root (high contrast) in useEffect
+  const [fontSize, setFontSize] = useState("medium"); // Default font size
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [activeTab, setActiveTab] = useState("account");
@@ -100,22 +85,14 @@ export default function SettingsPage() {
     // Load user settings from database
     const loadSettings = async () => {
       try {
-        // Fetch all users to find by username (case-insensitive)
-        const { data: allUsers, error: usersError } = await supabase
+        // Fetch user data from database
+        const { data: userData, error: userError } = await supabase
           .from("users")
-          .select("id, email, google_connected, username");
+          .select("id, email, google_connected")
+          .eq("username", storedUsername)
+          .single();
           
-        if (usersError) throw usersError;
-        
-        // Find user with case-insensitive match
-        const userData = allUsers.find(u => 
-          u.username && u.username.toLowerCase() === storedUsername.toLowerCase()
-        );
-        
-        if (!userData) {
-          console.error("User not found with username:", storedUsername);
-          return;
-        }
+        if (userError) throw userError;
         
         if (userData) {
           // Set email with fallback for null/undefined values
@@ -168,11 +145,11 @@ export default function SettingsPage() {
             
             // Set font size from database
             if (userSettings.font_size) {
-              updateFontSize(userSettings.font_size);
+              setFontSize(userSettings.font_size);
             }
             
             if (userSettings.time_type) {
-              updateTimeFormat(userSettings.time_type);
+              setTimeFormat(userSettings.time_type);
             }
             
             if (userSettings.notification_enabled !== undefined && userSettings.notification_enabled !== null) {
@@ -186,7 +163,7 @@ export default function SettingsPage() {
             
             if (storedTimezone) setTimezone(storedTimezone);
             if (storedColorMode !== null) setColorMode(storedColorMode);
-            if (storedFontSize) updateFontSize(storedFontSize);
+            if (storedFontSize) setFontSize(storedFontSize);
           }
           
           const googleConnected = localStorage.getItem("googleConnected");
@@ -200,68 +177,66 @@ export default function SettingsPage() {
     loadSettings();
   }, [router]);
 
-  // Update local colorMode state when global settings change
+  // Apply color mode to the document
   useEffect(() => {
-    if (!isClient) return;
-    
-    // Convert global state to local colorMode string
-    let newColorMode = "light";
-    if (isHighContrast) newColorMode = "";
-    else if (isDarkMode) newColorMode = "dark";
-    
-    // Update local state if different
-    if (newColorMode !== colorMode) {
-      setColorMode(newColorMode);
+    // Skip if colorMode is null or undefined (initial state)
+    if (colorMode === null || colorMode === undefined) {
+      return;
     }
-  }, [isClient, isDarkMode, isHighContrast, colorMode]);
-
-  // These effects are no longer needed since the SettingsContext handles them
-  // The global settings context takes care of updating the DOM and localStorage
-  
-  // Handler functions for settings changes
-  const handleChangeFontSize = (size) => {
-    console.log("Changing font size to:", size);
-    updateFontSize(size);
-  };
-  
-  const handleChangeColor = (value) => {
-    console.log("Changing color mode to:", value);
-    // Use the global settings context to update color mode
-    if (value === "") {
-      // High contrast mode
-      updateColorMode("high-contrast");
-    } else {
-      // Light or dark mode
-      updateColorMode(value);
+    
+    // Ensure we have a valid color mode value
+    const validColorModes = ["", "light", "dark"];
+    const validColorMode = validColorModes.includes(colorMode) ? colorMode : "";
+    
+    // Remove all possible classes first
+    document.documentElement.classList.remove("light", "dark");
+    
+    // Add the new class if it's not the default (empty string)
+    if (validColorMode) {
+      document.documentElement.classList.add(validColorMode);
     }
-    setColorMode(value);
-  };
+    
+    console.log("Applied color mode to document:", validColorMode || "default");
+    
+    // Save to localStorage
+    localStorage.setItem("colorMode", validColorMode);
+  }, [colorMode]);
 
-  const handleChangeTimeFormat = (format) => {
-    console.log("Changing time format to:", format);
-    updateTimeFormat(format);
-  };
+  // Apply font size to the document
+  useEffect(() => {
+    if (!fontSize) return;
+    
+    // Remove all possible font size classes first
+    document.documentElement.classList.remove("text-small", "text-medium", "text-large");
+    
+    // Add the new font size class
+    document.documentElement.classList.add(`text-${fontSize}`);
+    
+    // Save to localStorage
+    localStorage.setItem("fontSize", fontSize);
+  }, [fontSize]);
+  
+  // Save time format to localStorage when it changes
+  useEffect(() => {
+    if (!timeFormat) return;
+    
+    // Save to localStorage
+    localStorage.setItem("timeFormat", timeFormat);
+  }, [timeFormat]);
 
   const saveSettings = async () => {
     setIsSaving(true);
     setSaveMessage("");
 
     try {
-      // Get user ID from database using case-insensitive match
-      const { data: allUsers, error: usersError } = await supabase
+      // Get user ID from database
+      const { data: userData, error: userError } = await supabase
         .from("users")
-        .select("id, username");
+        .select("id")
+        .eq("username", username)
+        .single();
       
-      if (usersError) throw usersError;
-      
-      // Find user with case-insensitive match
-      const userData = allUsers.find(u => 
-        u.username && u.username.toLowerCase() === username.toLowerCase()
-      );
-      
-      if (!userData) {
-        throw new Error("User not found with username: " + username);
-      }
+      if (userError) throw userError;
       
       // Check if user settings already exist
       const { data: existingSettingsArray, error: checkError } = await supabase
@@ -347,21 +322,14 @@ export default function SettingsPage() {
     setEmailUpdateMessage("");
     
     try {
-      // Verify password using case-insensitive match
-      const { data: allUsers, error: usersError } = await supabase
+      // Verify password
+      const { data: userData, error: userError } = await supabase
         .from("users")
-        .select("password, username");
+        .select("password")
+        .eq("username", username)
+        .single();
       
-      if (usersError) throw usersError;
-      
-      // Find user with case-insensitive match
-      const userData = allUsers.find(u => 
-        u.username && u.username.toLowerCase() === username.toLowerCase()
-      );
-      
-      if (!userData) {
-        throw new Error("User not found with username: " + username);
-      }
+      if (userError) throw userError;
       
       // Check if password is correct
       const isPasswordCorrect = await bcrypt.compare(password, userData.password);
@@ -371,14 +339,11 @@ export default function SettingsPage() {
         return;
       }
       
-      // We already have the user data from the password verification step
-      // Just use it directly for the update
-      
       // Update email in database
       const { error: updateError } = await supabase
         .from("users")
         .update({ email: newEmail })
-        .eq("id", userData.id);
+        .eq("username", username);
       
       if (updateError) {
         throw updateError;
@@ -423,31 +388,11 @@ export default function SettingsPage() {
 
   const disconnectGoogle = async () => {
     try {
-      // Get all users to find the target user first
-      const { data: allUsers, error: userLookupError } = await supabase
-        .from("users")
-        .select("id, username");
-      
-      if (userLookupError) {
-        console.error("Error looking up user:", userLookupError);
-        throw userLookupError;
-      }
-      
-      // Find user with case-insensitive match
-      const userRecord = allUsers.find(u => 
-        u.username && u.username.toLowerCase() === username.toLowerCase()
-      );
-      
-      if (!userRecord) {
-        console.error("User not found with username:", username);
-        throw new Error("User not found");
-      }
-      
       // Update database to remove Google connection
       const { error } = await supabase
         .from("users")
         .update({ google_connected: false })
-        .eq("id", userRecord.id);
+        .eq("username", username);
       
       if (error) throw error;
       
@@ -506,89 +451,66 @@ export default function SettingsPage() {
             </ul>
           </div>
           
-          <div className="tab-content relative overflow-hidden">
-            <AnimatePresence mode="wait">
-              {activeTab === 'account' && (
-                <motion.div 
-                  key="account"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="space-y-6"
-                >
-                  <TimezoneSettings 
-                    timezone={timezone}
-                    setTimezone={setTimezone}
-                    timezones={timezones}
-                  />
-                  
-                  <EmailSettings 
-                    currentEmail={currentEmail}
-                    newEmail={newEmail}
-                    setNewEmail={setNewEmail}
-                    password={password}
-                    setPassword={setPassword}
-                    handleUpdateEmail={updateEmail}
-                    emailUpdateMessage={emailUpdateMessage}
-                    isUpdatingEmail={isUpdatingEmail}
-                  />
-                  
-                  <GoogleConnect 
-                    isGoogleConnected={isGoogleConnected}
-                    setIsGoogleConnected={setIsGoogleConnected}
-                  />
-                  
-                  <DeleteAccountSettings 
-                    username={username}
-                  />
-                </motion.div>
-              )}
-              
-              {activeTab === 'appearance' && (
-                <motion.div 
-                  key="appearance"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="space-y-6"
-                >
-                  <AppearanceSettings 
-                    colorMode={colorMode}
-                    setColorMode={handleChangeColor}
-                    colorModes={colorModes}
-                  />
-                  
-                  <FontSizeSettings 
-                    fontSize={fontSize}
-                    setFontSize={handleChangeFontSize}
-                    fontSizes={fontSizes}
-                  />
-                </motion.div>
-              )}
-              
-              {activeTab === 'preferences' && (
-                <motion.div 
-                  key="preferences"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="space-y-6"
-                >
-                  <TimeFormatSettings 
-                    timeFormat={timeFormat}
-                    setTimeFormat={handleChangeTimeFormat}
-                  />
-                  
-                  <NotificationSettings 
-                    notificationEnabled={notificationEnabled}
-                    setNotificationEnabled={setNotificationEnabled}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="tab-content">
+            {activeTab === 'account' && (
+              <div className="space-y-6">
+                <TimezoneSettings 
+                  timezone={timezone}
+                  setTimezone={setTimezone}
+                  timezones={timezones}
+                />
+                
+                <EmailSettings 
+                  currentEmail={currentEmail}
+                  newEmail={newEmail}
+                  setNewEmail={setNewEmail}
+                  password={password}
+                  setPassword={setPassword}
+                  handleUpdateEmail={updateEmail}
+                  emailUpdateMessage={emailUpdateMessage}
+                  isUpdatingEmail={isUpdatingEmail}
+                />
+                
+                <GoogleConnect 
+                  isGoogleConnected={isGoogleConnected}
+                  setIsGoogleConnected={setIsGoogleConnected}
+                />
+                
+                <DeleteAccountSettings 
+                  username={username}
+                />
+              </div>
+            )}
+            
+            {activeTab === 'appearance' && (
+              <div className="space-y-6">
+                <AppearanceSettings 
+                  colorMode={colorMode}
+                  setColorMode={setColorMode}
+                  colorModes={colorModes}
+                />
+                
+                <FontSizeSettings 
+                  fontSize={fontSize}
+                  setFontSize={setFontSize}
+                  fontSizes={fontSizes}
+                />
+              </div>
+            )}
+            
+            {activeTab === 'preferences' && (
+              <div className="space-y-6">
+                <TimeFormatSettings 
+                  timeFormat={timeFormat}
+                  setTimeFormat={setTimeFormat}
+                />
+                
+                <NotificationSettings 
+                  notificationEnabled={notificationEnabled}
+                  setNotificationEnabled={setNotificationEnabled}
+                />
+              </div>
+            )}
           </div>
         </div>
         

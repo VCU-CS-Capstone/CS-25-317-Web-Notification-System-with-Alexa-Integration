@@ -66,33 +66,38 @@ const Calendar = ({ selectedDate, onDateSelect }) => {
     const prevMonthDays = prevMonth.getDate();
     
     for (let i = prevMonthDays - daysFromPrevMonth + 1; i <= prevMonthDays; i++) {
+      const prevMonthDate = new Date(year, month - 1, i);
       days.push({
-        date: new Date(year, month - 1, i),
+        date: prevMonthDate,
         day: i,
         isCurrentMonth: false,
         isPrevMonth: true,
+        isSelected: isSameDay(prevMonthDate, selectedDate)
       });
     }
     
     // Add days from current month
     for (let i = 1; i <= lastDay.getDate(); i++) {
+      const currentMonthDate = new Date(year, month, i);
       days.push({
-        date: new Date(year, month, i),
+        date: currentMonthDate,
         day: i,
         isCurrentMonth: true,
-        isToday: isToday(new Date(year, month, i)),
-        isSelected: isSameDay(new Date(year, month, i), selectedDate),
+        isToday: isToday(currentMonthDate),
+        isSelected: isSameDay(currentMonthDate, selectedDate),
       });
     }
     
     // Add days from next month
     const remainingDays = totalDays - days.length;
     for (let i = 1; i <= remainingDays; i++) {
+      const nextMonthDate = new Date(year, month + 1, i);
       days.push({
-        date: new Date(year, month + 1, i),
+        date: nextMonthDate,
         day: i,
         isCurrentMonth: false,
         isNextMonth: true,
+        isSelected: isSameDay(nextMonthDate, selectedDate)
       });
     }
     
@@ -102,13 +107,25 @@ const Calendar = ({ selectedDate, onDateSelect }) => {
   const fetchRemindersForMonth = async (date) => {
     setLoading(true);
     try {
+      if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+        console.error("Invalid date for fetching reminders:", date);
+        setLoading(false);
+        return;
+      }
+      
       const year = date.getFullYear();
       const month = date.getMonth();
       
+      // Create clean date objects to avoid timezone issues
       // First day of the month in YYYY-MM-DD format
-      const firstDay = new Date(year, month, 1).toISOString().split('T')[0];
+      const firstDayDate = new Date(year, month, 1);
+      const firstDay = formatDateForDB(firstDayDate);
+      
       // Last day of the month in YYYY-MM-DD format
-      const lastDay = new Date(year, month + 1, 0).toISOString().split('T')[0];
+      const lastDayDate = new Date(year, month + 1, 0);
+      const lastDay = formatDateForDB(lastDayDate);
+      
+      console.log(`Fetching reminders for month from ${firstDay} to ${lastDay}`);
       
       const { data, error } = await supabase
         .from("events")
@@ -128,6 +145,7 @@ const Calendar = ({ selectedDate, onDateSelect }) => {
         remindersByDate[reminder.event_date].push(reminder.id);
       });
       
+      console.log(`Found reminders for ${Object.keys(remindersByDate).length} days this month`);
       setReminders(remindersByDate);
     } catch (error) {
       console.error("Error fetching reminders:", error);
@@ -160,34 +178,75 @@ const Calendar = ({ selectedDate, onDateSelect }) => {
 
   // Helper function to check if two dates are the same day
   const isSameDay = (date1, date2) => {
-    return date1.getDate() === date2.getDate() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getFullYear() === date2.getFullYear();
+    if (!date1 || !date2) return false;
+    
+    // Ensure both are Date objects
+    const d1 = date1 instanceof Date ? date1 : new Date(date1);
+    const d2 = date2 instanceof Date ? date2 : new Date(date2);
+    
+    // Check for invalid dates
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return false;
+    
+    return d1.getDate() === d2.getDate() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getFullYear() === d2.getFullYear();
   };
 
   // Format date as YYYY-MM-DD for checking reminders
   const formatDateForDB = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      console.error("Invalid date for formatting:", date);
+      return null;
+    }
+    
+    // Create a clean date object to avoid timezone issues
+    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getDate()).padStart(2, '0');
+    
     return `${year}-${month}-${day}`;
   };
 
   // Check if a date has reminders
   const hasReminders = (date) => {
     const formattedDate = formatDateForDB(date);
+    if (!formattedDate) return false;
+    
     return reminders[formattedDate] && reminders[formattedDate].length > 0;
   };
 
   // Handle date selection without redirect
-  const handleDateSelect = (date) => {
-    onDateSelect(date);
-    // Removed redirect to dashboard
+  const handleDateClick = (day) => {
+    if (!day || !day.date || isNaN(day.date.getTime())) {
+      console.error("Invalid day clicked in calendar:", day);
+      return;
+    }
+    
+    // Create a clean date object to avoid timezone issues
+    const localDate = new Date(day.date.getFullYear(), day.date.getMonth(), day.date.getDate());
+    console.log("Calendar: Date selected:", localDate.toISOString());
+    
+    if (onDateSelect) {
+      onDateSelect(localDate);
+    }
+    
+    // Update the calendar days to reflect the new selection
+    const updatedDays = calendarDays.map(d => ({
+      ...d,
+      isSelected: isSameDay(d.date, localDate)
+    }));
+    setCalendarDays(updatedDays);
   };
 
   // Navigate to monthly view
   const navigateToMonthlyView = () => {
-    router.push(`/monthly-view?month=${currentMonth.getMonth()}&year=${currentMonth.getFullYear()}`);
+    // Since we already show the monthly view in the calendar component,
+    // we'll just log this action for now
+    console.log("Monthly view clicked for:", currentMonth.toISOString());
+    // If you want to add a dedicated monthly view page later, uncomment this:
+    // router.push(`/calendar?month=${currentMonth.getMonth()}&year=${currentMonth.getFullYear()}`);
   };
 
   return (
@@ -253,7 +312,7 @@ const Calendar = ({ selectedDate, onDateSelect }) => {
         {calendarDays.map((day, index) => (
           <div
             key={index}
-            onClick={() => handleDateSelect(day.date)}
+            onClick={() => handleDateClick(day)}
             className={`
               relative h-16 p-1 border rounded-md cursor-pointer transition-colors
               ${day.isCurrentMonth 
