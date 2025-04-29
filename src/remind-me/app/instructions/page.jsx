@@ -34,6 +34,7 @@ const page = () => {
             <li>“Add a reminder”</li>
             <li>“Add an event”</li>
             <li>“Remove a reminder”</li>
+            <li>"Complete a reminder"</li>
             <li>“List my reminders”</li>
           </ul>
           <br></br>
@@ -126,7 +127,11 @@ const page = () => {
             <li>“Paperwork”</li>
           </ul>
           <p>
-            Then, you'll need to provide the date of the reminder to be removed.
+            If there are multiple reminders with the same name, Alexa will list the remindrs with that name from the past week through the next two weeks. She'll then ask for the date of the remidner to be removed. 
+            <br></br>
+            If no other reminders have the same name, she'll repeat the date of the reminder and ask for you to confirm the date you want. 
+            <br></br>
+            *If the reminder date has passed, it currently requires you to specify the year. Otherwise, it will assume the year of the next occurence of that date. 
           </p>
           <ul className="list-disc ml-6">
             <li>“January 14th, 2025”</li>
@@ -137,6 +142,30 @@ const page = () => {
             Alexa will respond that the reminder/event was removed and then you will be prompted for what you would like to do next. This could be one of the application choices or “quit” to end the Remind Me session. 
           </p>
           <br></br>
+          <h3 className="text-2xl font-semibold">Completing a Reminder</h3>
+          <p>
+            To mark a reminder as complete or incomplete: Say to Alexa, "complete a reminder". 
+          </p>
+          <br></br>
+          <p>
+            If the name wasn’t given, you’ll be prompted to provide it. Otherwise, it will skip this step.
+          </p>
+          <ul className="list-disc ml-6">
+            <li>“Appointment with. . .”</li>
+            <li>“Pick up. . .”</li>
+            <li>“Paperwork”</li>
+          </ul>
+          <p>
+            If the reminder <i>is not</i> already marked as complete, she will respond with the name of the reminder and that it was marked as complete.
+          </p>
+          <br></br>
+          <p>
+            If the reminder <i>is already</i> marked complete, she will respond with "The reminder is already completed. Do you want to mark it as incomplete?". She will then be looking for a yes or no response
+          </p>
+          <br></br>
+          <p>
+            Then, you will be prompted for what you would like to do next. This could be one of the application choices or "quit" to end the Remind Me session. 
+          </p>
           <h3 className="text-2xl font-semibold">Listing Daily Reminders</h3>
           <p>
             To list the current day’s reminders, you can say:
