@@ -38,29 +38,38 @@ const FeaturesSection = () => {
     }
   ];
   
+  // Check if user has large font setting
+  const checkLargeFontSettings = () => {
+    if (typeof window === 'undefined') return false;
+    const fontSize = localStorage.getItem('fontSize');
+    return fontSize === 'large' || fontSize === 'x-large';
+  };
+
   return (
-    <div className="bg-[var(--bg-secondary)] rounded-lg shadow-lg p-6 mb-6 border border-[var(--accent-color)] backdrop-blur-sm">
+    <div className="bg-[var(--bg-secondary)] rounded-lg shadow-lg p-6 mb-6 border border-[var(--accent-color)] backdrop-blur-sm overflow-hidden">
       <h3 className="text-xl font-bold mb-4 text-center text-[var(--text-primary)]">
         Key Features
       </h3>
       
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 overflow-hidden">
         {features.map((feature, index) => (
           <button
             key={index}
             onClick={() => setActiveTab(index)}
-            className={`px-3 py-2 text-sm rounded-md transition-colors ${
+            className={`px-3 py-2 rounded-md transition-colors overflow-hidden break-words ${
               activeTab === index
                 ? "bg-[var(--accent-color)] text-[var(--text-on-accent)]"
                 : "bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-primary-hover)]"
             }`}
+            style={{ fontSize: checkLargeFontSettings() ? '12px' : '0.875rem' }}
           >
-            {feature.icon} {feature.title}
+            <span className="inline-block mr-1">{feature.icon}</span>
+            <span className="inline-block">{feature.title}</span>
           </button>
         ))}
       </div>
       
-      <div className="bg-[var(--bg-primary)] p-4 rounded-lg">
+      <div className="bg-[var(--bg-primary)] p-4 rounded-lg overflow-hidden">
         <div className="flex items-center mb-2">
           <span className="text-3xl mr-3">{features[activeTab].icon}</span>
           <h4 className="text-lg font-medium text-[var(--text-primary)]">

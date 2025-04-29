@@ -31,29 +31,64 @@ export default function CalendarPage() {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      const day = selectedDate.toISOString().split("T")[0]; // YYYY-MM-DD
+      
+      // Get userId from localStorage
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        console.warn("No user ID found in localStorage");
+        setReminders([]);
+        setLoading(false);
+        return;
+      }
+      
+      // Format date properly to avoid timezone issues
+      const formatDate = (date) => {
+        if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+          console.error("Invalid date for formatting:", date);
+          return null;
+        }
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
+      const formattedDate = formatDate(selectedDate);
+      console.log(`Fetching reminders for date: ${formattedDate} and user: ${userId}`);
+      
       const { data, error } = await supabase
         .from("events")
-        .select("id, event_name, start_time, interval")
-        .eq("event_date", day)
-        .eq("userid", /* if you filter by user: */ 1)
+        .select("*")
+        .eq("event_date", formattedDate)
+        .eq("userid", userId)
         .order("start_time", { ascending: true });
 
       if (error) {
         console.error("Error loading reminders:", error);
         setReminders([]);
       } else {
+        console.log(`Found ${data.length} reminders for ${formattedDate}`);
         setReminders(data);
       }
       setLoading(false);
     };
 
-    load();
+    if (selectedDate) {
+      load();
+    }
   }, [selectedDate]);
 
   const handleDateSelect = (date) => {
-    setSelectedDate(date);
-    // no router.push
+    if (!date || isNaN(date.getTime())) {
+      console.error("Invalid date selected in calendar page:", date);
+      return;
+    }
+    
+    // Create a clean date object to avoid timezone issues
+    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    console.log("Calendar page: Date selected:", localDate.toISOString());
+    
+    setSelectedDate(localDate);
   };
 
   return (

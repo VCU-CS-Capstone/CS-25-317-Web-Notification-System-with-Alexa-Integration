@@ -7,6 +7,7 @@ import Popup from "../components/Popup";
 import { supabase } from "../lib/supabaseClient";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 const NotificationSetup = dynamic(() => import("../components/NotificationSetup"), {
   ssr: false,
@@ -64,6 +65,21 @@ function DashboardContent() {
     }
   }, [searchParams]);
 
+  const handleDateSelect = (date) => {
+    if (!date || isNaN(date.getTime())) {
+      console.error("Invalid date selected in dashboard:", date);
+      return;
+    }
+    console.log("Dashboard: Date selected:", date.toISOString());
+    
+    // Create a new date object to avoid reference issues
+    // and ensure we're using the local date without timezone issues
+    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    console.log("Dashboard: Using local date:", localDate.toISOString());
+    
+    setSelectedDate(localDate);
+  };
+
   const handleCardClick = (reminder) => {
     setSelectedReminder(reminder);
   };
@@ -78,20 +94,36 @@ function DashboardContent() {
 
     if (storedUsername && storedUsername !== "null" && storedUsername.trim() !== "") {
       const fetchUserId = async () => {
-        const { data, error } = await supabase
-          .from("users")
-          .select("id")
-          .eq("username", storedUsername)
-          .single();
+        try {
+          // Get user ID for querying reminders using case-insensitive match
+          const { data: allUsers, error: usersError } = await supabase
+            .from("users")
+            .select("id, username");
 
-        if (error || !data) {
-          setError("User not found or error occurred");
-          console.error("Error:", error);
-        } else {
-          setUserId(data.id);
+          if (usersError) {
+            setError("Error fetching users data");
+            console.error("Error fetching users data:", usersError);
+            return;
+          }
+          
+          // Find user with case-insensitive match
+          const userData = allUsers.find(u => 
+            u.username && u.username.toLowerCase() === storedUsername.toLowerCase()
+          );
+          
+          if (!userData) {
+            setError("User not found");
+            console.error("User not found with username:", storedUsername);
+            return;
+          }
+          
+          setUserId(userData.id);
           // Save userId to localStorage for other components to use
-          localStorage.setItem('userId', data.id);
-          console.log("Set userId in localStorage:", data.id);
+          localStorage.setItem('userId', userData.id);
+          console.log("Set userId in localStorage:", userData.id);
+        } catch (error) {
+          setError("Error fetching user data");
+          console.error("Error:", error);
         }
       };
 
@@ -171,6 +203,12 @@ function DashboardContent() {
       d = new Date();
     }
     
+    // Check if date is valid
+    if (isNaN(d.getTime())) {
+      console.error("Invalid date for formatting:", date);
+      d = new Date(); // Fallback to current date
+    }
+    
     // Use local date methods to prevent timezone issues
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -186,11 +224,39 @@ function DashboardContent() {
       return;
     }
     
+    // Ensure date is valid
+    let validDate;
+    if (date instanceof Date && !isNaN(date.getTime())) {
+      // Create a clean date object to avoid timezone issues
+      validDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    } else if (typeof date === 'string') {
+      try {
+        // For YYYY-MM-DD format
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          const [year, month, day] = date.split('-').map(num => parseInt(num, 10));
+          validDate = new Date(year, month - 1, day);
+        } else {
+          validDate = new Date(date);
+        }
+        
+        if (isNaN(validDate.getTime())) {
+          validDate = new Date(); // Fallback to today
+          console.warn("Invalid date string, using today's date instead:", date);
+        }
+      } catch (e) {
+        validDate = new Date(); // Fallback to today
+        console.warn("Error parsing date, using today's date instead:", e);
+      }
+    } else {
+      validDate = new Date(); // Fallback to today
+      console.warn("Invalid date provided, using today's date instead:", date);
+    }
+    
     setLoading(true);
     setError(null);
     try {
       // Format the date for database query, preventing timezone issues
-      const formattedDate = formatDateForDB(date);
+      const formattedDate = formatDateForDB(validDate);
       
       console.log(`Fetching reminders for userId: ${userId} on date: ${formattedDate}`);
 
@@ -214,7 +280,7 @@ function DashboardContent() {
         is_complete: event.is_complete
       }));
       setReminders(formattedData);
-      console.log(`Found ${formattedData.length} reminders for user ${userId}`);
+      console.log(`Found ${formattedData.length} reminders for user ${userId} on ${formattedDate}`);
     } catch (err) {
       setError(err.message);
       console.error("Error fetching reminders:", err.message);
@@ -241,7 +307,8 @@ function DashboardContent() {
 
   // Update when selected date changes
   useEffect(() => {
-    if (userId) {
+    if (userId && selectedDate) {
+      console.log("Selected date changed, fetching reminders for:", selectedDate);
       fetchReminders(selectedDate);
     }
   }, [selectedDate]);
@@ -249,17 +316,49 @@ function DashboardContent() {
   const handleDelete = async () => {
     if (!selectedReminder) return;
     try {
-      const { error } = await supabase
+      console.log('Deleting reminder with ID:', selectedReminder.id);
+      
+      // Store the reminder ID and date before deletion for later use
+      const reminderIdToDelete = selectedReminder.id;
+      
+      // First, delete any related records in the map table
+      const { error: mapDeleteError } = await supabase
+        .from("map")
+        .delete()
+        .eq("event_id", reminderIdToDelete);
+
+      if (mapDeleteError) {
+        console.error('Error deleting related map records:', mapDeleteError);
+        throw mapDeleteError;
+      }
+      
+      console.log('Related map records deleted successfully');
+      
+      // Now delete the event itself
+      const { error: eventDeleteError } = await supabase
         .from("events")
         .delete()
-        .eq("id", selectedReminder.id);
+        .eq("id", reminderIdToDelete);
 
-      if (error) throw error;
+      if (eventDeleteError) {
+        console.error('Supabase event delete error:', eventDeleteError);
+        throw eventDeleteError;
+      }
 
+      console.log('Reminder deleted successfully');
+      
+      // Close the popup first
       closePopup();
-      fetchReminders(selectedDate);
+      
+      // Update the reminders state directly instead of refetching everything
+      // This prevents the page from resetting
+      setReminders(prevReminders => prevReminders.filter(reminder => reminder.id !== reminderIdToDelete));
+      
+      // No need for background refresh - the state update above is sufficient
+      // This avoids any timezone or date formatting issues
     } catch (err) {
       console.error("Error deleting reminder:", err.message);
+      alert("Failed to delete reminder: " + err.message);
     }
   };
 
@@ -289,23 +388,43 @@ function DashboardContent() {
             <p className="text-center text-[var(--text-secondary)]">Loading reminders...</p>
           )}
           {error && <p className="text-center text-red-500">Error: {error}</p>}
-          <div className={`grid gap-3 pb-20 overflow-x-hidden
-            ${fontSize === 'large' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3' : 
-              fontSize === 'small' ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7' : 
-              'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'}
-          `}>
-            {reminders.map((reminder) => (
-              <ReminderCard
-                key={reminder.id}
-                title={reminder.title}
-                startTime={removeSeconds(reminder.startTime)}
-                date={reminder.date}
-                event_description={reminder.event_description}
-                is_complete={reminder.is_complete}
-                onClick={() => handleCardClick(reminder)}
-              />
-            ))}
-          </div>
+          <motion.div 
+            key={selectedDate.toISOString()}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className={`grid gap-3 pb-20 overflow-x-hidden
+              ${fontSize === 'large' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3' : 
+                fontSize === 'small' ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7' : 
+                'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'}
+            `}
+          >
+            <AnimatePresence mode="popLayout">
+              {reminders.map((reminder, index) => (
+                <motion.div
+                  key={reminder.id}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ 
+                    duration: 0.3, 
+                    delay: index * 0.05, // Staggered animation
+                    ease: "easeOut" 
+                  }}
+                >
+                  <ReminderCard
+                    title={reminder.title}
+                    startTime={removeSeconds(reminder.startTime)}
+                    date={reminder.date}
+                    event_description={reminder.event_description}
+                    is_complete={reminder.is_complete}
+                    onClick={() => handleCardClick(reminder)}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
         </div>
         {selectedReminder && selectedReminder.startTime && (
           <Popup

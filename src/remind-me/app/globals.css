@@ -92,7 +92,20 @@ body {
   color: var(--navbar-text);
 }
 
-/* Font size classes */
+/* Global Font size settings based on data attribute */
+[data-font-size="small"] {
+  font-size: 0.875rem; /* 14px base size */
+}
+
+[data-font-size="medium"] {
+  font-size: 1rem; /* 16px base size - default */
+}
+
+[data-font-size="large"] {
+  font-size: 1.125rem; /* 18px base size */
+}
+
+/* Legacy Font size classes for backwards compatibility */
 .text-small {
   font-size: 0.875rem; /* 14px */
 }
@@ -101,11 +114,100 @@ body {
   font-size: 1rem; /* 16px - default */
 }
 
+/* Animation classes */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-in-out;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-in-out;
+}
+
+.animate-scale {
+  animation: scale 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scale {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Transition classes */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+.transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
 .text-large {
   font-size: 1.125rem; /* 18px */
 }
 
-/* Apply font sizes to different elements */
+/* Apply font sizes to different elements proportionally */
+/* Small font size elements */
+[data-font-size="small"] h1 {
+  font-size: 1.5rem;
+}
+
+[data-font-size="small"] h2 {
+  font-size: 1.25rem;
+}
+
+[data-font-size="small"] button,
+[data-font-size="small"] input,
+[data-font-size="small"] select,
+[data-font-size="small"] textarea {
+  font-size: 0.875rem;
+}
+
+/* Large font size elements */
+[data-font-size="large"] h1 {
+  font-size: 2.25rem;
+}
+
+[data-font-size="large"] h2 {
+  font-size: 1.875rem;
+}
+
+[data-font-size="large"] button,
+[data-font-size="large"] input,
+[data-font-size="large"] select,
+[data-font-size="large"] textarea {
+  font-size: 1.125rem;
+}
+
+/* Legacy selectors for backwards compatibility */
 .text-small h1 {
   font-size: 1.5rem;
 }

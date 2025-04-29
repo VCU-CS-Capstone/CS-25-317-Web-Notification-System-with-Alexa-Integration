@@ -1,5 +1,6 @@
 import localFont from "next/font/local";
 import LayoutWrapper from "./components/LayoutWrapper";
+import { SettingsProvider } from "./contexts/SettingsContext";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -47,20 +48,41 @@ export default function RootLayout({ children }) {
           __html: `
             (function() {
               try {
+                // Apply color mode
                 const colorMode = localStorage.getItem('colorMode') || '';
                 document.documentElement.classList.remove('light', 'dark');
                 if (colorMode) {
                   document.documentElement.classList.add(colorMode);
                 }
+                
+                // Apply font size - important for ensuring consistent sizing
+                const fontSize = localStorage.getItem('fontSize') || 'medium';
+                document.documentElement.setAttribute('data-font-size', fontSize);
+                
+                // Set the color-scheme meta tag based on the theme
+                // Both default (empty) and 'light' (purple & cream) are light themes
+                const isDarkMode = colorMode === 'dark';
+                const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+                
+                if (metaColorScheme) {
+                  metaColorScheme.content = isDarkMode ? 'dark' : 'light';
+                } else {
+                  const meta = document.createElement('meta');
+                  meta.name = 'color-scheme';
+                  meta.content = isDarkMode ? 'dark' : 'light';
+                  document.head.appendChild(meta);
+                }
               } catch (e) {
-                console.error('Error applying color mode:', e);
+                console.error('Error applying theme settings:', e);
               }
             })();
           `
         }} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden`}>
-        <LayoutWrapper>{children}</LayoutWrapper>
+        <SettingsProvider>
+          <LayoutWrapper>{children}</LayoutWrapper>
+        </SettingsProvider>
       </body>
     </html>
   );

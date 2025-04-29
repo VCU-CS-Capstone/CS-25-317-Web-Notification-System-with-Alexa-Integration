@@ -3,6 +3,7 @@
 
 import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
+import PageTransition from "./PageTransition";
 
 export default function LayoutWrapper({ children }) {
   const pathname = usePathname();
@@ -11,7 +12,9 @@ export default function LayoutWrapper({ children }) {
   return (
     <>
       {!hideNavbar && <Navbar />}
-      {children}
+      <PageTransition>
+        {children}
+      </PageTransition>
     </>
   );
 }

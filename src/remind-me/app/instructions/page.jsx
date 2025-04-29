@@ -229,6 +229,16 @@ const page = () => {
       <CollapsibleInstruction title="Creating Desktop Shortcut for Website">
         <div>
           <h3 className="text-2xl font-semibold">Add Website to Desktop</h3>
+          <YouTube
+            videoId="XbrgCkrBOkM" 
+            opts={{
+              width: '100%',
+              height: '390',
+              playerVars: {
+                autoplay: 0,
+              },
+            }}
+          />
           <p>There are different instructions for Windows users and Appl users. Please go to the set of instructions that applies to your computer system.</p>
           <br></br>
           <h3 className="text-2xl font-semibold">Shortcut for Windows</h3>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 const formatDate = (date) => {
   // Parse the date string without timezone conversion
@@ -57,6 +58,10 @@ export const ReminderCard = ({ title, event_description, startTime, date, is_com
   const statusTextColor = is_complete 
     ? 'text-green-500' 
     : (isPast ? 'text-red-500' : 'text-white');
+    
+  // Force reminders to be marked as past if they're in the past
+  // Even if is_complete hasn't been updated in the database
+  const effectiveStatus = is_complete ? 'complete' : (isPast ? 'incomplete' : 'active');
 
   // Add a useEffect to detect if we're in high contrast mode
   const [isHighContrast, setIsHighContrast] = useState(true);
@@ -112,8 +117,12 @@ export const ReminderCard = ({ title, event_description, startTime, date, is_com
   };
 
   return (
-    <div
-      onClick={onClick}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      whileHover={fontSize === 'large' ? {} : { scale: 1.02 }}
       className={`
         ${isPast 
           ? 'bg-gray-700' // Darker gray for past-time cards
@@ -123,18 +132,25 @@ export const ReminderCard = ({ title, event_description, startTime, date, is_com
         }
         ${fontSize === 'large' ? 'p-3' : fontSize === 'small' ? 'p-2' : 'p-2.5'} 
         shadow-md border-2 rounded-lg cursor-pointer 
-        hover:shadow-lg transition-all duration-200 ease-in-out 
+        ${fontSize === 'large' ? 'hover:shadow-xl' : 'hover:shadow-lg'} transition-all duration-250 ease-in-out 
         flex flex-col justify-between
         w-full max-w-full overflow-hidden
         ${fontSize === 'large' ? 'aspect-square' : fontSize === 'small' ? 'aspect-[4/3]' : 'aspect-[4/3]'}
         mb-3 mx-auto
         ${isHighContrast ? 'border-black' : 'border-[var(--accent-color)]'} 
+        transform-gpu will-change-auto
       `}
+      onClick={onClick}
     >
       {/* Title and status indicator */}
       <div className="flex items-center justify-between w-full mb-2">
         <h2 className={`${fontSize === 'large' ? 'text-2xl' : fontSize === 'small' ? 'text-lg' : 'text-xl'} font-bold ${statusTextColor} truncate max-w-[80%]`}>{title}</h2>
-        <div className={`w-3 h-3 rounded-full ${is_complete ? 'bg-green-500' : isPast ? 'bg-red-500' : 'bg-blue-400'}`}></div>
+        <div className="flex items-center">
+          <span className={`text-xs mr-2 px-1.5 py-0.5 rounded font-medium ${is_complete ? 'bg-green-500 text-white' : isPast ? 'bg-red-500 text-white' : 'bg-blue-400 text-white'}`}>
+            {is_complete ? 'Complete' : isPast ? 'Incomplete' : 'Active'}
+          </span>
+          <div className={`w-3 h-3 rounded-full ${is_complete ? 'bg-green-500' : isPast ? 'bg-red-500' : 'bg-blue-400'}`}></div>
+        </div>
       </div>
       
       {/* Description */}
@@ -145,15 +161,15 @@ export const ReminderCard = ({ title, event_description, startTime, date, is_com
       {/* Date and Time */}
       <div className="mt-auto pt-2 border-t border-gray-500 w-full">
         <div className="flex justify-between items-center">
-          <p className={`${fontSize === 'large' ? 'text-base' : fontSize === 'small' ? 'text-xs' : 'text-sm'} font-medium ${isPast ? 'text-white' : isHighContrast ? 'text-yellow-300' : 'text-[var(--text-secondary)]'}`}>
+          <p className={`${fontSize === 'large' ? 'text-lg' : fontSize === 'small' ? 'text-sm' : 'text-base'} font-bold ${isPast ? 'text-white' : isHighContrast ? 'text-yellow-300' : 'text-[var(--text-secondary)]'}`}>
             {formatDate(date)}
           </p>
-          <p className={`${fontSize === 'large' ? 'text-base' : fontSize === 'small' ? 'text-xs' : 'text-sm'} font-medium ${isPast ? 'text-white' : isHighContrast ? 'text-yellow-300' : 'text-[var(--text-secondary)]'}`}>
+          <p className={`${fontSize === 'large' ? 'text-lg' : fontSize === 'small' ? 'text-sm' : 'text-base'} font-bold ${isPast ? 'text-white' : isHighContrast ? 'text-yellow-300' : 'text-[var(--text-secondary)]'}`}>
             {formatTime(startTime)}
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
